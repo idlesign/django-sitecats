@@ -1,0 +1,22 @@
+django-sitecats installation
+============================
+
+
+Python ``setuptools`` package is required to install django-sitecats.
+
+
+Use the following command line to install django-sitecats from sources directory (containing setup.py):
+
+    easy_install .
+
+or
+
+    python setup.py install
+
+
+Alternatively you can install an up-to-date version of django-sitecats from PyPI:
+
+    easy_install django-sitecats
+
+
+Note: `easy_install` is bundled with ``setuptools``.
