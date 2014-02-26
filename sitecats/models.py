@@ -5,7 +5,8 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-from .settings import MODEL_CATEGORY, MODEL_TAG
+from .settings import MODEL_CATEGORY, MODEL_FLAG
+from .utils import get_flag_model
 
 
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
@@ -14,13 +15,13 @@ USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 # This allows South to handle our custom 'CharFieldNullable' field.
 if 'south' in settings.INSTALLED_APPS:
     from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ['^sitetcats\.models\.CharFieldNullable'])
+    add_introspection_rules([], ['^sitecats\.models\.CharFieldNullable'])
 
 
 class CharFieldNullable(models.CharField):
-    """We use custom char field to put nulls in SiteTreeItem 'alias' field.
-    That allows 'unique_together' directive in Meta to work properly, so
-    we don't have two site tree items with the same alias in the same site tree.
+    """We use custom char field to put nulls in CategoryBase 'alias' field.
+    That allows 'unique' param to be handled properly, so we don't have
+    two categories with the same alias.
 
     """
     def get_prep_value(self, value):
@@ -33,28 +34,19 @@ class CharFieldNullable(models.CharField):
 @python_2_unicode_compatible
 class CategoryBase(models.Model):
 
-    STATUS_NOT_SET = 0
-
-    def get_status_choices(self):
-        statuses = [
-            (_('Basic'), (
-                (self.STATUS_NOT_SET, _('Not set')),
-            )),
-        ]
-        return statuses
-
     title = models.CharField(_('Title'), max_length=250, help_text=_('Category name.'))
+    note = models.TextField(_('Note'), blank=True)
 
     alias = CharFieldNullable(_('Alias'), max_length=80, help_text=_('Short name to address category from a template.'), blank=True, null=True, unique=True)
-    slug = models.SlugField(verbose_name=_('Slug'), unique=True, max_length=250)
-    status = models.IntegerField(_('Status'), help_text=_('.'), choices=get_status_choices(), default=STATUS_NOT_SET)
+    slug = models.SlugField(verbose_name=_('Slug'), unique=True, max_length=250, null=True, blank=True)
+    status = models.IntegerField(_('Status'), help_text=_('.'), null=True, blank=True, db_index=True)
 
-    creator = models.ForeignKey(USER_MODEL, related_name='creators', verbose_name=_('Creator'))
+    creator = models.ForeignKey(USER_MODEL, related_name='%(class)s_creators', verbose_name=_('Creator'))
     time_created = models.DateTimeField(_('Date created'), auto_now_add=True)
-    time_midified = models.DateTimeField(_('Date modified'), editable=False, auto_now=True)
+    time_modified = models.DateTimeField(_('Date modified'), editable=False, auto_now=True)
     # The last two are for 'adjacency list' model.
-    parent = models.ForeignKey('self', related_name='%(class)s_parent', verbose_name=_('Parent'), help_text=_('Parent category.'), db_index=True, null=True, blank=True)
-    sort_order = models.IntegerField(_('Sort order'), help_text=_('Item position among other categories under the same parent.'), db_index=True, default=0)
+    parent = models.ForeignKey('self', related_name='%(class)s_parents', verbose_name=_('Parent'), help_text=_('Parent category.'), db_index=True, null=True, blank=True)
+    sort_order = models.PositiveIntegerField(_('Sort order'), help_text=_('Item position among other categories under the same parent.'), db_index=True, default=0)
 
     def save(self, force_insert=False, force_update=False, **kwargs):
         """We override parent save method to set category sort order to its primary key value."""
@@ -73,13 +65,16 @@ class CategoryBase(models.Model):
 
 
 @python_2_unicode_compatible
-class TagBase(models.Model):
+class FlagBase(models.Model):
 
+    category = models.ForeignKey(MODEL_CATEGORY, related_name='%(class)s_categories', verbose_name=_('Category'), null=True, blank=True)
+    note = models.TextField(_('Note'), blank=True)
+    status = models.IntegerField(_('Status'), help_text=_('.'), null=True, blank=True, db_index=True)
+
+    creator = models.ForeignKey(USER_MODEL, related_name='%(class)s_creators', verbose_name=_('Creator'))
     time_created = models.DateTimeField(_('Date created'), auto_now_add=True)
-    category = models.ForeignKey(MODEL_CATEGORY, related_name='categories', verbose_name=_('Category'))
-    creator = models.ForeignKey(USER_MODEL, related_name='creators', verbose_name=_('Creator'))
 
-    # Here follows link to an object.
+    # Here follows a link to an object.
     object_id = models.PositiveIntegerField(verbose_name=_('Object ID'), db_index=True)
     content_type = models.ForeignKey(ContentType, verbose_name=_('Content type'), related_name='%(app_label)s_%(class)s_tags')
 
@@ -87,16 +82,37 @@ class TagBase(models.Model):
 
     class Meta:
         abstract = True
-        verbose_name = _('Tag')
-        verbose_name_plural = _('Tags')
+        verbose_name = _('Flag')
+        verbose_name_plural = _('Flags')
 
     def __str__(self):
-        return _('%s:%s tagged %s' % (self.content_type, self.object_id, self.category))
+        return _('%s:%s flagged %s' % (self.content_type, self.object_id, self.category))
 
 
 class Category(CategoryBase):
     """Built-in category class. Default functionality."""
 
 
-class Tag(TagBase):
-    """Built-in tag class. Default functionality."""
+class Flag(FlagBase):
+    """Built-in flag class. Default functionality."""
+
+
+class ModelWithBookmark(models.Model):
+    """Helper base class for models with bookmarks."""
+
+    bookmarks = generic.GenericRelation(MODEL_FLAG)
+
+    def add_bookmark(self, user, category=None, note=''):
+        bookmark = get_flag_model()(category=category, creator=user, note=note, linked_object=self)
+        bookmark.save()
+
+    def delete_bookmark(self, user, category=None):
+        get_flag_model().objects.filter(category=category, creator=user, linked_object=self).delete()
+
+    def is_bookmarked(self, user, category=None):
+        if not user.id:
+            return None
+        return self.bookmarks.filter(category=category, creator=user).count()
+
+    class Meta:
+        abstract = True
