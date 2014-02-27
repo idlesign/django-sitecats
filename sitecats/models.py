@@ -1,12 +1,13 @@
 from django.db import models
 from django.conf import settings
+from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from .settings import MODEL_CATEGORY, MODEL_FLAG
-from .utils import get_flag_model
+from .utils import get_flag_model, get_category_model
 
 
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
@@ -97,6 +98,23 @@ class Flag(FlagBase):
     """Built-in flag class. Default functionality."""
 
 
+class ModelWithTag(models.Model):
+    """Helper base class for models with tags."""
+
+    tags = generic.GenericRelation(MODEL_FLAG, limit_choices_to={'category__isnull': False})  # TODO verify limit works or create Manager
+
+    def add_tag(self, tag, parent_category, user, note=''):
+        category = get_category_model()(title=tag, creator=user, parent=parent_category)
+        category.save()
+        if isinstance(tag, six.string_types):
+            tag = get_flag_model()(category=category, creator=user, note=note, linked_object=self)
+        tag.save()
+        return tag
+
+    class Meta:
+        abstract = True
+
+
 class ModelWithBookmark(models.Model):
     """Helper base class for models with bookmarks."""
 
@@ -105,6 +123,7 @@ class ModelWithBookmark(models.Model):
     def add_bookmark(self, user, category=None, note=''):
         bookmark = get_flag_model()(category=category, creator=user, note=note, linked_object=self)
         bookmark.save()
+        return bookmark
 
     def delete_bookmark(self, user, category=None):
         get_flag_model().objects.filter(category=category, creator=user, linked_object=self).delete()
