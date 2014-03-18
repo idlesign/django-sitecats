@@ -101,7 +101,10 @@ class Flag(FlagBase):
 class ModelWithTag(models.Model):
     """Helper base class for models with tags."""
 
-    tags = generic.GenericRelation(MODEL_FLAG, limit_choices_to={'category__isnull': False})  # TODO verify limit works or create Manager
+    tags = generic.GenericRelation(MODEL_FLAG)
+
+    def get_tags(self):
+        return self.tags.filter(category__isnull=False)
 
     def add_tag(self, tag, parent_category, user, note=''):
         category = get_category_model()(title=tag, creator=user, parent=parent_category)
@@ -120,18 +123,21 @@ class ModelWithBookmark(models.Model):
 
     bookmarks = generic.GenericRelation(MODEL_FLAG)
 
-    def add_bookmark(self, user, category=None, note=''):
-        bookmark = get_flag_model()(category=category, creator=user, note=note, linked_object=self)
+    def get_bookmarks(self):
+        return self.bookmarks.filter(category__isnull=True)
+
+    def add_bookmark(self, user, note=''):
+        bookmark = get_flag_model()(category=None, creator=user, note=note, linked_object=self)
         bookmark.save()
         return bookmark
 
-    def delete_bookmark(self, user, category=None):
-        get_flag_model().objects.filter(category=category, creator=user, linked_object=self).delete()
+    def delete_bookmark(self, user):
+        get_flag_model().objects.filter(category=None, creator=user, linked_object=self).delete()
 
-    def is_bookmarked(self, user, category=None):
+    def is_bookmarked(self, user):
         if not user.id:
             return None
-        return self.bookmarks.filter(category=category, creator=user).count()
+        return self.bookmarks.filter(category=None, creator=user).count()
 
     class Meta:
         abstract = True
