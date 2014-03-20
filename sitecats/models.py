@@ -49,6 +49,10 @@ class CategoryBase(models.Model):
     parent = models.ForeignKey('self', related_name='%(class)s_parents', verbose_name=_('Parent'), help_text=_('Parent category.'), db_index=True, null=True, blank=True)
     sort_order = models.PositiveIntegerField(_('Sort order'), help_text=_('Item position among other categories under the same parent.'), db_index=True, default=0)
 
+    def get_href(self):
+        return '#'  # TODO implement customized hrefs
+    href = property(get_href)
+
     def save(self, force_insert=False, force_update=False, **kwargs):
         """We override parent save method to set category sort order to its primary key value."""
         super(CategoryBase, self).save(force_insert, force_update, **kwargs)
@@ -87,7 +91,7 @@ class FlagBase(models.Model):
         verbose_name_plural = _('Flags')
 
     def __str__(self):
-        return _('%s:%s flagged %s' % (self.content_type, self.object_id, self.category))
+        return '%s:%s flagged %s' % (self.content_type, self.object_id, self.category)
 
 
 class Category(CategoryBase):
