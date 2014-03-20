@@ -1,0 +1,3 @@
+{% for tag in sitecats_tags %}
+    <span><a href="{{ tag.category.href }}">{{ tag.category.title }}</a></span>
+{% endfor %}
