@@ -1,6 +1,6 @@
 from django import template
 
-from ..utils import get_category_model
+from ..utils import get_tags
 
 register = template.Library()
 
@@ -29,12 +29,12 @@ def sitecats_tags(parser, token):
     tokens = token.split_contents()
     use_template = detect_clause(parser, 'template', tokens)
     target_obj = detect_clause(parser, 'for', tokens)
+    category = detect_clause(parser, 'from', tokens)
 
     tokens_num = len(tokens)
 
-    if tokens_num in (3, 5, 7):
-        category_alias = parser.compile_filter(tokens[2])
-        return sitecats_tagsNode(category_alias, target_obj, use_template)
+    if tokens_num in (1, 3, 5, 7):
+        return sitecats_tagsNode(category, target_obj, use_template)
     else:
         raise template.TemplateSyntaxError('`sitecats_tags` tag expects the following notation: {% sitecats_tags from "my_category" for obj template "sitecats/my_tags.html" %}.')
 
@@ -42,23 +42,18 @@ def sitecats_tags(parser, token):
 class sitecats_tagsNode(template.Node):
     """Renders tags under the specified category."""
 
-    def __init__(self, category_alias, target_object, use_template):
+    def __init__(self, category, target_object, use_template):
         self.use_template = use_template
         self.target_object = target_object
-        self.category_alias = category_alias
+        self.category = category
 
     def render(self, context):
-        use_template = self.use_template or 'sitecats/tags.html'
-
-        if isinstance(use_template, template.FilterExpression):
-            use_template = use_template.resolve(context)
-
-        category_model = get_category_model()  # TODO implement
+        resolve = lambda arg: arg.resolve(context) if isinstance(arg, template.FilterExpression) else arg
 
         context.push()
-        context['sitecats_tags'] = []
+        context['sitecats_tags'] = get_tags(resolve(self.category), resolve(self.target_object))
 
-        contents = template.loader.get_template(use_template).render(context)
+        contents = template.loader.get_template(resolve(self.use_template or 'sitecats/tags.html')).render(context)
 
         context.pop()
 
