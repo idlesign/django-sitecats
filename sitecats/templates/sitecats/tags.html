@@ -1,3 +1,3 @@
 {% for tag in sitecats_tags %}
-    <span>{{ tag.category.title }}</span>
+    <span data-flagsnum="{{ tag.flags_num }}">{{ tag.category.title }}</span>
 {% endfor %}
