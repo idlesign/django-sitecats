@@ -1,4 +1,3 @@
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import get_model
 from django.core.exceptions import ImproperlyConfigured
 
@@ -33,20 +32,3 @@ def get_category_model():
 def get_flag_model():
     """Returns the Flag model, set for the project."""
     return get_model_class('MODEL_FLAG')
-
-
-def get_tags(category, target_object):
-    """Returns a list of tags in the given category associated
-    with the given object.
-
-    """
-    # TODO category filtering
-    # TODO reduce db hits (category.title)
-    flag_model = get_flag_model()
-
-    items = []
-    if target_object is not None:
-        content_type = ContentType.objects.get_for_model(target_object)
-        items = flag_model.objects.filter(content_type=content_type, object_id=target_object.id, category__isnull=False).all()
-
-    return items

@@ -1,6 +1,9 @@
 from django import template
 
-from ..utils import get_tags
+from ..sitecatsapp import SiteCats
+
+
+sitecats = SiteCats()
 
 register = template.Library()
 
@@ -51,7 +54,7 @@ class sitecats_tagsNode(template.Node):
         resolve = lambda arg: arg.resolve(context) if isinstance(arg, template.FilterExpression) else arg
 
         context.push()
-        context['sitecats_tags'] = get_tags(resolve(self.category), resolve(self.target_object))
+        context['sitecats_tags'] = sitecats.get_tags(resolve(self.category), resolve(self.target_object))
 
         contents = template.loader.get_template(resolve(self.use_template or 'sitecats/tags.html')).render(context)
 
