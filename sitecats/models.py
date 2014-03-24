@@ -111,7 +111,10 @@ class ModelWithTag(models.Model):
         return self.tags.filter(category__isnull=False)
 
     def add_tag(self, tag, parent_category, user, note=''):
-        category = get_category_model()(title=tag, creator=user, parent=parent_category)
+        parent_id = parent_category
+        if isinstance(parent_category, models.Model):
+            parent_id = parent_category.id
+        category = get_category_model()(title=tag, creator=user, parent_id=parent_id)
         category.save()
         if isinstance(tag, six.string_types):
             tag = get_flag_model()(category=category, creator=user, note=note, linked_object=self)
