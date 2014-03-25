@@ -1,3 +1,4 @@
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.conf import settings
 from django.utils import six
@@ -49,9 +50,10 @@ class CategoryBase(models.Model):
     parent = models.ForeignKey('self', related_name='%(class)s_parents', verbose_name=_('Parent'), help_text=_('Parent category.'), db_index=True, null=True, blank=True)
     sort_order = models.PositiveIntegerField(_('Sort order'), help_text=_('Item position among other categories under the same parent.'), db_index=True, default=0)
 
-    def get_href(self):
-        return '#'  # TODO implement customized hrefs
-    href = property(get_href)
+    def get_absolute_url(self, target_object=None):
+        if target_object is not None and hasattr(target_object, 'get_tag_absolute_url'):
+            return lambda: target_object.get_tag_absolute_url(self)
+        return reverse('sitecats-listing', args=[str(self.id)])  # TODO think over
 
     def save(self, force_insert=False, force_update=False, **kwargs):
         """We override parent save method to set category sort order to its primary key value."""

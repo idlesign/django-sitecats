@@ -55,10 +55,12 @@ class SiteCats(object):
         """Returns cache entry parameter value by its name."""
         return self.cache[entry_name].get(key, False)
 
-    def _populate_tags_data(self, tags):
+    def _populate_tags_data(self, tags, target_object):
         for tag in tags:
             # Attach category data from cache to prevent db hits.
-            tag['category'] = self.cache_get_entry('ids', tag['category_id'])
+            category = self.cache_get_entry('ids', tag['category_id'])
+            tag.update(category.__dict__)
+            tag['absolute_url'] = category.get_absolute_url(target_object)
         return tags
 
     def get_tags(self, category, target_object):
@@ -82,7 +84,7 @@ class SiteCats(object):
 
         filter_kwargs.update(category_kwargs)
         items = list(get_flag_model().objects.filter(**filter_kwargs).values('category_id').annotate(flags_num=Count('category')))
-        return self._populate_tags_data(items)
+        return self._populate_tags_data(items, target_object)
 
 
 class SiteCatsError(Exception):
