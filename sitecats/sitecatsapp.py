@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db.models import signals, Count
+from django.db.models import signals, Count, Model
 
 from .utils import get_category_model, get_flag_model
 
@@ -63,8 +63,8 @@ class SiteCats(object):
             tag['absolute_url'] = category.get_absolute_url(target_object)
         return tags
 
-    def get_tags(self, category, target_object):
-        """Returns a list of tags in the given category associated with the given object."""
+    def get_categories(self, category, target_object):
+        """Returns a list of tags in a given category associated with a given object."""
         self.cache_init()
 
         filter_kwargs = {}
@@ -76,6 +76,10 @@ class SiteCats(object):
                 category_kwargs = {'category_id__in': children}
 
         if target_object is not None:
+
+            if not isinstance(target_object, Model):
+                raise SiteCatsError('Object passed with `target_object` of `get_tags()` must be a model.')
+
             object_kwargs = {
                 'content_type': ContentType.objects.get_for_model(target_object),
                 'object_id': target_object.id

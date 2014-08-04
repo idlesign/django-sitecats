@@ -1,6 +1,6 @@
 from django import template
 
-from ..sitecatsapp import SiteCats
+from ..sitecatsapp import SiteCats, SiteCatsError
 
 
 sitecats = SiteCats()
@@ -9,21 +9,21 @@ register = template.Library()
 
 
 @register.tag
-def sitecats_tags(parser, token):
-    """Parses sitecats_tags tag parameters.
+def sitecats_categories(parser, token):
+    """Parses sitecats_categories tag parameters.
 
 
         Supported notations:
 
-        1. {% sitecats_tags from "my_category" %}
+        1. {% sitecats_categories from "my_category" %}
 
            Renders all the tags from `my_category` aliased category.
 
-        2. {% sitecats_tags from "my_category" for obj %}
+        2. {% sitecats_categories from "my_category" for obj %}
 
            Renders tags residing in `my_category` category associated with the given `obj` object.
 
-        3. {% sitecats_tags from "my_category" for obj template "sitecats/my_tags.html" %}
+        3. {% sitecats_categories from "my_category" for obj template "sitecats/my_cats.html" %}
 
            Renders tags using "sitecats/my_tags.html" template.
 
@@ -37,12 +37,12 @@ def sitecats_tags(parser, token):
     tokens_num = len(tokens)
 
     if tokens_num in (1, 3, 5, 7):
-        return sitecats_tagsNode(category, target_obj, use_template)
+        return sitecats_categoriesNode(category, target_obj, use_template)
     else:
-        raise template.TemplateSyntaxError('`sitecats_tags` tag expects the following notation: {% sitecats_tags from "my_category" for obj template "sitecats/my_tags.html" %}.')
+        raise template.TemplateSyntaxError('`sitecats_categories` tag expects the following notation: {% sitecats_categories from "my_category" for obj template "sitecats/my_tags.html" %}.')
 
 
-class sitecats_tagsNode(template.Node):
+class sitecats_categoriesNode(template.Node):
     """Renders tags under the specified category."""
 
     def __init__(self, category, target_object, use_template):
@@ -54,9 +54,12 @@ class sitecats_tagsNode(template.Node):
         resolve = lambda arg: arg.resolve(context) if isinstance(arg, template.FilterExpression) else arg
 
         context.push()
-        context['sitecats_tags'] = sitecats.get_tags(resolve(self.category), resolve(self.target_object))
+        try:
+            context['sitecats_categories'] = sitecats.get_categories(resolve(self.category), resolve(self.target_object))
+        except SiteCatsError:
+            raise SiteCatsError('Object from `sitecats_categories` tag `for` clause must be a model.')
 
-        contents = template.loader.get_template(resolve(self.use_template or 'sitecats/tags.html')).render(context)
+        contents = template.loader.get_template(resolve(self.use_template or 'sitecats/cats.html')).render(context)
 
         context.pop()
 

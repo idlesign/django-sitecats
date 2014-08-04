@@ -7,7 +7,7 @@ https://github.com/idlesign/django-sitecats
 Description
 -----------
 
-*Django reusable application for content categorization and flagging.*
+*Django reusable application for content categorization.*
 
 Here will be an introductory description.
 
@@ -16,7 +16,8 @@ Here will be an introductory description.
 Requirements
 ------------
 
-1. Python 2.7+
+1. Python 2.7+, 3.2+
+2. Django 1.5+
 
 
 

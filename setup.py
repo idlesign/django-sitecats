@@ -16,7 +16,7 @@ setup(
     version='.'.join(map(str, VERSION)),
     url='https://github.com/idlesign/django-sitecats',
 
-    description='Django reusable application for content categorization and flagging.',
+    description='Django reusable application for content categorization.',
     long_description=README,
     license='BSD 3-Clause License',
 
@@ -24,6 +24,7 @@ setup(
     author_email='idlesign@yandex.ru',
 
     packages=['sitecats'],
+    install_requires=['django-etc'],
     include_package_data=True,
     zip_safe=False,
 
@@ -36,6 +37,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'License :: OSI Approved :: BSD License'
     ],
 )
