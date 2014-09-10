@@ -1,0 +1,24 @@
+{% load i18n %}
+{% with list.get_categories as all_categories %}
+    {% if all_categories or list.editor %}
+    <div id="catbox_{{ list.get_id }}" data-catalias="{{ list.alias }}" data-catid="{{ list.get_id }}" class="categories_box">
+        {% if list.show_title %}
+        <div class="title" title="{{ list.get_note }}">{{ list.get_title }}</div>
+        {% endif %}
+        {% include "sitecats/list.html" %}
+        {% if list.editor and list.editor.allow_add %}
+            <div class="editor">
+                <form id="catform_add_{{ list.get_id }}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="category_action" value="add">
+                    <input type="hidden" name="category_base_id" value="{{ list.get_id }}">
+                    <input type="text" name="category_title" required value="" placeholder="{% trans "Category name" %}">
+
+                    {% if list.editor.render_button %}<input type="submit" value="{% trans "Add" %}">{% endif %}
+                </form>
+                <div id="hint_box_{{ list.get_id }}" class="hint_box"></div>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endwith %}

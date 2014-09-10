@@ -1,0 +1,28 @@
+<ul id="catlist_{{ list.get_id }}" class="list">
+{% with list.show_links as show_links %}
+{% for cat in all_categories %}
+    <li>
+    {% if show_links %}
+        <a href="{{ cat.absolute_url }}" data-tiesnum="{{ cat.ties_num }}" data-catid="{{ cat.id }}" class="list_entry {{ list.cat_html_class }}" title="{{ cat.note }}">{{ cat.title }}</a>
+    {% else %}
+        <span data-tiesnum="{{ cat.ties_num }}" data-catid="{{ cat.id }}" class="list_entry {{ list.cat_html_class }}" title="{{ cat.note }}">{{ cat.title }}</span>
+    {% endif %}
+    {% if list.editor %}
+        {% if list.editor.allow_remove and not cat.is_locked %}
+            <form id="catform_remove_{{ list.get_id }}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="category_action" value="remove">
+                <input type="hidden" name="category_base_id" value="{{ list.get_id }}">
+                <input type="hidden" name="category_id" value="{{ cat.id }}">
+                {% if list.editor.render_button %}
+                    <input type="submit" value="x" class="btn_remove">
+                {% else %}
+                    <span class="btn_remove" data-catformid="catform_remove_{{ list.get_id }}">x</span>
+                {% endif %}
+            </form>
+        {% endif %}
+    {% endif %}
+    </li>
+{% endfor %}
+{% endwith %}
+</ul>
