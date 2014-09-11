@@ -169,7 +169,67 @@ class ModelWithCategory(models.Model):
     class Meta:
         abstract = True
 
-    # TODO current categories lists shortcut method.
+    _category_lists_init_kwargs = None
+    _category_editor = None
+
+    def set_category_lists_init_kwargs(self, kwa_dict):
+        """Sets keyword arguments for category lists which can be spawned
+        by get_categories().
+
+        :param dict|None kwa_dict:
+        :return:
+        """
+        self._category_lists_init_kwargs = kwa_dict
+
+    def get_category_lists(self, init_kwargs=None, additional_parents_aliases=None):
+        """Returns a list of CategoryList objects, associated with
+        this model instance.
+
+        :param dict|None init_kwargs:
+        :param list|None additional_parents_aliases:
+        :rtype: list|CategoryRequestHandler
+        :return:
+        """
+        from .toolbox import CategoryList, SITECATS_CACHE
+        init_kwargs = init_kwargs or {}
+        additional_parents_aliases = additional_parents_aliases or []
+        ctype = ContentType.objects.get_for_model(self)
+        cat_ids = [item[0] for item in self.categories.model.objects.filter(content_type=ctype, object_id=self.id).values_list('category_id').all()]
+        parent_aliases = SITECATS_CACHE.get_parents_for(cat_ids)
+        parent_aliases = list(parent_aliases) + additional_parents_aliases
+        lists = []
+        for parent_alias in parent_aliases:
+            kwargs = {}
+            if self._category_lists_init_kwargs is not None:
+                kwargs.update(self._category_lists_init_kwargs)
+            kwargs.update(init_kwargs)
+            catlist = CategoryList(parent_alias, **kwargs)  # TODO Burned in class name. Make more customizable.
+            catlist.set_obj(self)
+            lists.append(catlist)
+
+        if self._category_editor is not None:  # Return editor lists instead of plain lists if it's enabled.
+            return self._category_editor.get_lists()
+
+        return lists
+
+    def enable_category_lists_editor(self, request, editor_init_kwargs=None, additional_parents_aliases=None, lists_init_kwargs=None):
+        """Enables editor functionality for categories of this object.
+
+        :param Request request: Django request object
+        :param dict|None editor_init_kwargs: Keyword args to initialize category lists editor with. See CategoryList.enable_editor()
+        :param list|None additional_parents_aliases: Aliases of categories for editor to render even if this object has no tie to them.
+        :param dict|None lists_init_kwargs: Keyword args to initialize CategoryList objects with
+        :return:
+        """
+        from .toolbox import CategoryRequestHandler
+        additional_parents_aliases = additional_parents_aliases or []
+        lists_init_kwargs = lists_init_kwargs or {}
+        editor_init_kwargs = editor_init_kwargs or {}
+        handler = CategoryRequestHandler(request, self)
+        lists = self.get_category_lists(init_kwargs=lists_init_kwargs, additional_parents_aliases=additional_parents_aliases)
+        handler.register_lists(lists, lists_init_kwargs=lists_init_kwargs, editor_init_kwargs=editor_init_kwargs)
+        self._category_editor = handler  # Set link to handler to mutate get_category_lists() behaviour.
+        return handler.listen()
 
     def add_to_category(self, category, user):
         """Add this model instance to a category.
@@ -226,7 +286,7 @@ class ModelWithCategory(models.Model):
         return ties
 
     @classmethod
-    def get_for_category_qs(cls, category):
+    def get_from_category_qs(cls, category):
         """Returns a QuerySet of objects of this type associated with the given category.
 
         :param Category category:
