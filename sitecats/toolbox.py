@@ -9,7 +9,7 @@ from .utils import get_category_model, Cache
 from .exceptions import SitecatsConfigurationError, SitecatsSecurityException, SitecatsNewCategoryException, SitecatsValidationError
 
 
-sitecats_cache = Cache()
+SITECATS_CACHE = Cache()  # Caching object.
 
 
 class CategoryList(object):
@@ -35,7 +35,7 @@ class CategoryList(object):
 
     def get_category_model(self):
         if self._cache_category is None:
-            self._cache_category = sitecats_cache.get_category_by_alias(self.alias)
+            self._cache_category = SITECATS_CACHE.get_category_by_alias(self.alias)
         return self._cache_category
 
     def get_category_attr(self, name, default=False):
@@ -52,7 +52,7 @@ class CategoryList(object):
         return self.get_category_attr('note', '')
 
     def get_categories(self):
-        return sitecats_cache.get_categories(self.alias, self.obj)
+        return SITECATS_CACHE.get_categories(self.alias, self.obj)
 
 
 class CategoryRequestHandler(object):
@@ -89,7 +89,7 @@ class CategoryRequestHandler(object):
         if not category_id:
             raise SitecatsSecurityException('Unsupported `category_id` value - `%s` - is passed to `action_remove()`.' % category_id)
 
-        category = sitecats_cache.get_category_by_id(category_id)
+        category = SITECATS_CACHE.get_category_by_id(category_id)
         if not category:
             raise SitecatsSecurityException('Unable to get `%s` category in `action_remove()`.' % category_id)
 
@@ -107,7 +107,7 @@ class CategoryRequestHandler(object):
             if min_num is not None and num-1 < min_num:
                 raise SitecatsValidationError(_('Unable to remove "%s" category from "%s": parent category requires at least %s %s.') % (category.title, category_list.get_title(), min_num, _n('subcategory', 'subcategories', min_num)))
 
-        child_ids = sitecats_cache.get_child_ids(category_list.alias)
+        child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)
         check_min_num(len(child_ids))
         if category_list.obj is None:  # Remove category itself and children.
             category.delete()
@@ -127,7 +127,7 @@ class CategoryRequestHandler(object):
         if not category_title:
             raise SitecatsSecurityException('Unsupported `category_title` value - `%s` - is passed to `action_add()`.' % category_title)
 
-        exists = sitecats_cache.find_category(category_list.alias, category_title)
+        exists = SITECATS_CACHE.find_category(category_list.alias, category_title)
 
         if exists and category_list.obj is None:  # Already exists.
             return exists
@@ -141,7 +141,7 @@ class CategoryRequestHandler(object):
             if max_num is not None and num+1 > max_num:
                 raise SitecatsValidationError(_('Unable to add "%s" category into "%s": parent category can have at most %s %s.') % (category_title, category_list.get_title(), max_num, _n('subcategory', 'subcategories', max_num)))
 
-        child_ids = sitecats_cache.get_child_ids(category_list.alias)
+        child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)
         if not exists:  # Add new category.
             if category_list.obj is None:
                 check_max_num(len(child_ids))
