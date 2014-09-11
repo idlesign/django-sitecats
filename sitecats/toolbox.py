@@ -283,13 +283,13 @@ class CategoryRequestHandler(object):
         try:
             return action_method(self._request, category_list)
         except SitecatsNewCategoryException as e:
-            self._request.POST = {}  # Prevent other forms fail.
             messages.error(self._request, e)
             return None
         except SitecatsValidationError as e:
-            self._request.POST = {}  # Prevent other forms fail.
             messages.error(self._request, e.messages[0])
             return None
+        finally:
+            self._request.POST = {}  # Prevent other forms fail.
 
     def get_lists(self):
         """Returns a list of previously registered CategoryList objects.
