@@ -66,24 +66,47 @@ class CategoryBase(models.Model):
 
     @classmethod
     def add(cls, title, creator, parent=None):
+        """Creates a category.
+
+        :param str title:
+        :param User creator:
+        :param Category|None parent:
+        :return:
+        """
         obj = cls(title=title, creator=creator, parent=parent)
         obj.save()
         return obj
 
     def get_absolute_url(self, target_object=None):
+        """Returns an URL fo this category querying `get_category_absolute_url` method the target object.
+
+        :param target_object:
+        :return: str
+        """
         if target_object is not None and hasattr(target_object, 'get_category_absolute_url'):
             return lambda: target_object.get_category_absolute_url(self)
         return reverse('sitecats-listing', args=[str(self.id)])  # TODO think over
 
     def delete(self, *args, **kwargs):
+        """Overridden to handle `is_locked`.
+
+        :param args:
+        :param kwargs:
+        :return:
+        """
         if self.is_locked:
             raise SitecatsLockedCategoryDelete('Unable to delete locked `%s` category.' % self)
         super(CategoryBase, self).delete(*args, **kwargs)
 
-    def save(self, force_insert=False, force_update=False, **kwargs):
-        """We override parent save method to set category sort order to its primary key value."""
+    def save(self, *args, **kwargs):
+        """Overridden to set sort order and sanitize title.
+
+        :param args:
+        :param kwargs:
+        :return:
+        """
         self.title = self.title.strip()
-        super(CategoryBase, self).save(force_insert, force_update, **kwargs)
+        super(CategoryBase, self).save(*args, **kwargs)
         if self.sort_order == 0:
             self.sort_order = self.id
             self.save()
@@ -148,10 +171,16 @@ class ModelWithCategory(models.Model):
 
     # TODO current categories lists shortcut method.
 
-    def add_to_category(self, category, creator):
+    def add_to_category(self, category, user):
+        """Add this model instance to a category.
+
+        :param Category category: Category to add this object to
+        :param User user: User heir who adds
+        :return:
+        """
         init_kwargs = {
             'category': category,
-            'creator': creator,
+            'creator': user,
             'linked_object': self
         }
         tie = self.categories.model(**init_kwargs)
@@ -159,11 +188,23 @@ class ModelWithCategory(models.Model):
         return tie
 
     def remove_from_category(self, category):
+        """Removes this object from a given category.
+
+        :param Category category:
+        :return:
+        """
         ctype = ContentType.objects.get_for_model(self)
         self.categories.model.objects.filter(category=category, content_type=ctype, object_id=self.id).delete()
 
     @classmethod
-    def get_ties_for_categories_qs(cls, categories, creator=None, status=None):
+    def get_ties_for_categories_qs(cls, categories, user=None, status=None):
+        """Returns a QuerySet of Ties for the given categories.
+
+        :param list|Category categories:
+        :param User|None user:
+        :param int|None status:
+        :return:
+        """
         if not isinstance(categories, list):
             categories = [categories]
 
@@ -177,15 +218,21 @@ class ModelWithCategory(models.Model):
             'content_type': ContentType.objects.get_for_model(cls, for_concrete_model=False),
             'category_id__in': category_ids
         }
-        if creator is not None:
-            filter_kwargs['creator'] = creator
+        if user is not None:
+            filter_kwargs['creator'] = user
         if status is not None:
             filter_kwargs['status'] = status
         ties = get_tie_model().objects.filter(**filter_kwargs)
         return ties
 
     @classmethod
-    def get_for_category(cls, category):
+    def get_for_category_qs(cls, category):
+        """Returns a QuerySet of objects of this type associated with the given category.
+
+        :param Category category:
+        :rtype: list
+        :return:
+        """
         ids = cls.get_ties_for_categories_qs(category).values_list('object_id').distinct()
         filter_kwargs = {'id__in': [i[0] for i in ids]}
         return cls.objects.filter(**filter_kwargs)

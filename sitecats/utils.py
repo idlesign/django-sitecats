@@ -73,40 +73,77 @@ class Cache(object):
         """Returns cache entry parameter value by its name."""
         return self._cache[entry_name].get(key, default)
 
-    def _populate_tags_data(self, tags, target_object):
-        for tag in tags:
+    def _extend_ties(self, ties, target_object):
+        """Extends ties objects with data from their categories.
+
+        :param list ties:
+        :param target_object:
+        :return:
+        """
+        for tag in ties:
             # Attach category data from cache to prevent db hits.
+            # TODO Cache categories, urls.
             category = self.get_category_by_id(tag['category_id'])
             tag.update(category.__dict__)
+            # Resolves URL for a category.
             tag['absolute_url'] = category.get_absolute_url(target_object)
-        return tags
+        return ties
 
     def get_child_ids(self, parent_alias):
+        """Returns child IDs of the given parent category
+
+        :param str parent_alias: Parent category alias
+        :rtype: list
+        :return:
+        """
         self._cache_init()
         return self._cache_get_entry(self.CACHE_NAME_PARENTS, parent_alias, [])
 
-    def is_child(self, parent_alias, child_id):
-        return child_id in self.get_child_ids(parent_alias)
-
     def get_category_by_alias(self, alias):
+        """Returns Category object by its alias.
+
+        :param str alias:
+        :rtype: Category
+        :return:
+        """
         self._cache_init()
         return self._cache_get_entry(self.CACHE_NAME_ALIASES, alias)
 
     def get_category_by_id(self, id):
+        """Returns Category object by its id.
+
+        :param str alias:
+        :rtype: Category
+        :return:
+        """
         self._cache_init()
         return self._cache_get_entry(self.CACHE_NAME_IDS, id)
 
     def find_category(self, parent_alias, title):
+        """Searches parent category children for the given title (case independent).
+
+        :param str parent_alias:
+        :param str title:
+        :rtype: Category|None
+        :return: None if not found; otherwise - found Category
+        """
         found = None
         child_ids = self.get_child_ids(parent_alias)
         for cid in child_ids:
             category = self.get_category_by_id(cid)
-            if category.title.lower() == title.lower():  # Case independent.
+            if category.title.lower() == title.lower():
                 found = category
                 break
         return found
 
     def get_categories(self, parent_alias=None, target_object=None):
+        """Returns subcategories (or ties if `target_object` is set)
+        for the given parent category.
+
+        :param str parent_alias:
+        :param ModelWithCategory|Model target_object:
+        :return:
+        """
         child_ids = self.get_child_ids(parent_alias)
         if target_object is None:  # No filtering by object, list all known categories.
             return [self.get_category_by_id(cid) for cid in child_ids]
@@ -120,5 +157,6 @@ class Cache(object):
                 'object_id': target_object.id
             })
 
-            items = list(get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category')))
-            return self._populate_tags_data(items, target_object)
+            # Calculating categories weight too.
+            ties = list(get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category')))
+            return self._extend_ties(ties, target_object)

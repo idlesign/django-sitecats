@@ -10,6 +10,7 @@ except ImportError:
     MODEL_ADMIN = admin.ModelAdmin
 
 
+#TODO lock delete and alias edit for is_locked.
 class CategoryAdmin(MODEL_ADMIN):
     list_display = ('title', 'alias', 'is_locked', 'status')
     search_fields = ('title', 'alias', 'note', 'creator')
