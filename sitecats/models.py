@@ -163,17 +163,29 @@ class ModelWithCategory(models.Model):
         self.categories.model.objects.filter(category=category, content_type=ctype, object_id=self.id).delete()
 
     @classmethod
-    def get_for_category(cls, category):
-        # TODO caching, think over
-        category_id = category
-        if isinstance(category, models.Model):
-            category_id = category.id
+    def get_ties_for_categories_qs(cls, categories, creator=None, status=None):
+        if not isinstance(categories, list):
+            categories = [categories]
 
+        category_ids = []
+        for category in categories:
+            if isinstance(category, models.Model):
+                category_ids.append(category.id)
+            else:
+                category_ids.append(category)
         filter_kwargs = {
             'content_type': ContentType.objects.get_for_model(cls, for_concrete_model=False),
-            'category_id': category_id
+            'category_id__in': category_ids
         }
-        ids = get_tie_model().objects.filter(**filter_kwargs).values_list('object_id').distinct()
+        if creator is not None:
+            filter_kwargs['creator'] = creator
+        if status is not None:
+            filter_kwargs['status'] = status
+        ties = get_tie_model().objects.filter(**filter_kwargs)
+        return ties
 
+    @classmethod
+    def get_for_category(cls, category):
+        ids = cls.get_ties_for_categories_qs(category).values_list('object_id').distinct()
         filter_kwargs = {'id__in': [i[0] for i in ids]}
         return cls.objects.filter(**filter_kwargs)
