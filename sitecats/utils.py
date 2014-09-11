@@ -21,7 +21,7 @@ def get_tie_model():
 class Cache(object):
 
     # Sitecats objects are stored in Django cache for a year (60 * 60 * 24 * 365 = 31536000 sec).
-    # Cache is only invalidated on sitecats models change.
+    # Cache is only invalidated on sitecats Category model save/delete.
     CACHE_TIMEOUT = 31536000
     CACHE_ENTRY_NAME = 'sitecats'
 
@@ -30,13 +30,13 @@ class Cache(object):
     CACHE_NAME_PARENTS = 'parents'
 
     def __init__(self):
-        self.cache = None
+        self._cache = None
         # Listen for signals from the models.
         category_model = get_category_model()
-        signals.post_save.connect(self.cache_empty, sender=category_model)
-        signals.post_delete.connect(self.cache_empty, sender=category_model)
+        signals.post_save.connect(self._cache_empty, sender=category_model)
+        signals.post_delete.connect(self._cache_empty, sender=category_model)
 
-    def cache_init(self):
+    def _cache_init(self):
         """Initializes local cache from Django cache if required."""
         cache_ = cache.get(self.CACHE_ENTRY_NAME)
 
@@ -62,59 +62,56 @@ class Cache(object):
 
             cache.set(self.CACHE_ENTRY_NAME, cache_, self.CACHE_TIMEOUT)
 
-        self.cache = cache_
+        self._cache = cache_
 
-    def cache_empty(self, **kwargs):
+    def _cache_empty(self, **kwargs):
         """Empties cached sitecats data."""
-        self.cache = None
+        self._cache = None
         cache.delete(self.CACHE_ENTRY_NAME)
 
-    def cache_get_entry(self, entry_name, key, default=False):
+    def _cache_get_entry(self, entry_name, key, default=False):
         """Returns cache entry parameter value by its name."""
-        return self.cache[entry_name].get(key, default)
+        return self._cache[entry_name].get(key, default)
 
     def _populate_tags_data(self, tags, target_object):
         for tag in tags:
             # Attach category data from cache to prevent db hits.
-            category = self.cache_get_entry(self.CACHE_NAME_IDS, tag['category_id'])
+            category = self.get_category_by_id(tag['category_id'])
             tag.update(category.__dict__)
             tag['absolute_url'] = category.get_absolute_url(target_object)
         return tags
 
+    def get_child_ids(self, parent_alias):
+        self._cache_init()
+        return self._cache_get_entry(self.CACHE_NAME_PARENTS, parent_alias, [])
+
     def is_child(self, parent_alias, child_id):
-        self.cache_init()
-        child_ids = self.cache_get_entry(self.CACHE_NAME_PARENTS, parent_alias, [])
-        return child_id in child_ids
+        return child_id in self.get_child_ids(parent_alias)
 
     def get_category_by_alias(self, alias):
-        self.cache_init()
-        return self.cache_get_entry(self.CACHE_NAME_ALIASES, alias)
+        self._cache_init()
+        return self._cache_get_entry(self.CACHE_NAME_ALIASES, alias)
 
     def get_category_by_id(self, id):
-        self.cache_init()
-        return self.cache_get_entry(self.CACHE_NAME_IDS, id)
+        self._cache_init()
+        return self._cache_get_entry(self.CACHE_NAME_IDS, id)
 
     def find_category(self, parent_alias, title):
-        self.cache_init()
         found = None
-        child_ids = self.cache_get_entry(self.CACHE_NAME_PARENTS, parent_alias, [])
+        child_ids = self.get_child_ids(parent_alias)
         for cid in child_ids:
-            category = self.cache_get_entry(self.CACHE_NAME_IDS, cid)
+            category = self.get_category_by_id(cid)
             if category.title.lower() == title.lower():  # Case independent.
                 found = category
                 break
         return found
 
     def get_categories(self, parent_alias=None, target_object=None):
-        self.cache_init()
-
+        child_ids = self.get_child_ids(parent_alias)
         if target_object is None:  # No filtering by object, list all known categories.
-            child_ids = self.cache_get_entry(self.CACHE_NAME_PARENTS, parent_alias, [])
-            return [self.cache_get_entry(self.CACHE_NAME_IDS, cid) for cid in child_ids]
+            return [self.get_category_by_id(cid) for cid in child_ids]
         else:
             filter_kwargs = {}
-
-            child_ids = self.cache_get_entry(self.CACHE_NAME_PARENTS, parent_alias)
             if child_ids:
                 filter_kwargs.update({'category_id__in': child_ids})
 
