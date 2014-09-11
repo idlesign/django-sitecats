@@ -46,7 +46,7 @@ class CategoryList(object):
         """
         self.obj = obj
 
-    def enable_editor(self, allow_add=False, allow_remove=False, allow_new=False, min_num=None, max_num=None, render_button=True):
+    def enable_editor(self, allow_add=True, allow_remove=False, allow_new=False, min_num=None, max_num=None, render_button=True):
         """Enables editor controls for this category list.
 
         :param bool allow_add: Flag to allow adding object-to-categories ties
@@ -130,24 +130,29 @@ class CategoryRequestHandler(object):
         self._lists = OrderedDict()
         self._obj = obj
 
-    def register_lists(self, *category_lists, **lists_kwargs):
+    def register_lists(self, category_lists, lists_init_kwargs=None, editor_init_kwargs=None):
         """Registers CategoryList objects to handle their requests.
 
         :param list category_lists: CategoryList objects
-        :param dict lists_kwargs: Attributes to apply to each of CategoryList objects
+        :param dict lists_init_kwargs: Attributes to apply to each of CategoryList objects
         :return:
         """
+        lists_init_kwargs = lists_init_kwargs or {}
+        editor_init_kwargs = editor_init_kwargs or {}
+
         for lst in category_lists:
             if isinstance(lst, string_types):  # Spawn CategoryList object from base category alias.
-                lst = self.list_cls(lst, **lists_kwargs)
+                lst = self.list_cls(lst, **lists_init_kwargs)
             elif not isinstance(lst, CategoryList):
                 raise SitecatsConfigurationError('`CategoryRequestHandler.register_lists()` accepts only `CategoryList` objects or category aliases.')
 
             if self._obj:
                 lst.set_obj(self._obj)
 
-            for name, val in lists_kwargs.items():  # Setting CategoryList attributes from kwargs.
+            for name, val in lists_init_kwargs.items():  # Setting CategoryList attributes from kwargs.
                 setattr(lst, name, val)
+
+            lst.enable_editor(**editor_init_kwargs)
 
             self._lists[lst.get_id()] = lst
 
@@ -274,12 +279,15 @@ class CategoryRequestHandler(object):
 
         action_method = getattr(self, 'action_%s' % requested_action)
 
+        # TODO Customize messages.
         try:
             return action_method(self._request, category_list)
         except SitecatsNewCategoryException as e:
+            self._request.POST = {}  # Prevent other forms fail.
             messages.error(self._request, e)
             return None
         except SitecatsValidationError as e:
+            self._request.POST = {}  # Prevent other forms fail.
             messages.error(self._request, e.messages[0])
             return None
 
