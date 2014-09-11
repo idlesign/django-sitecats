@@ -69,8 +69,10 @@ class Cache(object):
         self._cache = None
         cache.delete(self.CACHE_ENTRY_NAME)
 
-    def _cache_get_entry(self, entry_name, key, default=False):
+    def _cache_get_entry(self, entry_name, key=None, default=False):
         """Returns cache entry parameter value by its name."""
+        if key is None:
+            return self._cache[entry_name]
         return self._cache[entry_name].get(key, default)
 
     def _extend_ties(self, ties, target_object):
@@ -88,6 +90,20 @@ class Cache(object):
             # Resolves URL for a category.
             tag['absolute_url'] = category.get_absolute_url(target_object)
         return ties
+
+    def get_parents_for(self, child_ids):
+        """Returns parent aliases for a list of child IDs.
+
+        :param list child_ids:
+        :rtype: set
+        :return:
+        """
+        self._cache_init()
+        parent_candidates = []
+        for parent, children in self._cache_get_entry(self.CACHE_NAME_PARENTS).items():
+            if set(children).intersection(child_ids):
+                parent_candidates.append(parent)
+        return set(parent_candidates)  # Make unique.
 
     def get_child_ids(self, parent_alias):
         """Returns child IDs of the given parent category
