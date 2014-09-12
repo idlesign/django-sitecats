@@ -2,6 +2,7 @@ from inspect import getargspec
 from collections import namedtuple, OrderedDict
 
 from django import VERSION
+from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 from django.utils.six import string_types
 from django.contrib import messages
@@ -30,6 +31,7 @@ def get_category_aliases_under(parent_alias=None):
     return [ch.alias for ch in SITECATS_CACHE.get_children_for(parent_alias, only_with_aliases=True)]
 
 
+@python_2_unicode_compatible
 class CategoryList(object):
     """Represents a set on categories under a parent category on page."""
     _cache_category = None
@@ -50,6 +52,9 @@ class CategoryList(object):
         self.cat_html_class = cat_html_class
         self.obj = None
         self.editor = None
+
+    def __str__(self):
+        return self.alias
 
     def set_obj(self, obj):
         """Sets a target object for categories to be filtered upon.
