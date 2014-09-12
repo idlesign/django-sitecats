@@ -1,0 +1,163 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+# Igor Starikov <idlesign@yandex.ru>, 2014
+msgid ""
+msgstr ""
+"Project-Id-Version: django-sitecats\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-09-12 14:13+0700\n"
+"PO-Revision-Date: 2014-09-12 14:16+0700\n"
+"Last-Translator: Igor 'idle sign' Starikov <idlesign@yandex.ru>\n"
+"Language-Team: Russian (http://www.transifex.com/projects/p/django-sitecats/"
+"language/ru/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 1.5.4\n"
+
+#: config.py:9
+msgid "Site Categories"
+msgstr "Категории сайта"
+
+#: models.py:45
+msgid "Title"
+msgstr "Заголовок"
+
+#: models.py:45
+msgid "Category name."
+msgstr "Название категории."
+
+#: models.py:46
+msgid "Alias"
+msgstr "Псевдоним"
+
+#: models.py:46
+msgid "Short name to address category from application code."
+msgstr "Краткое имя, чтобы обращаться к категории из кода приложения."
+
+#: models.py:47
+msgid "Locked"
+msgstr "Заблокирована"
+
+#: models.py:47
+msgid ""
+"Categories addressed from application code are locked, their aliases can not "
+"be changed. Such categories can be deleted from application code only."
+msgstr ""
+"Категории, к которым обращаются из кода приложений блокируются, их "
+"псевдонимы нельзя изменить. Такие категории могут быть удалены только из "
+"кода приложения."
+
+#: models.py:49
+msgid "Parent"
+msgstr "Родитель"
+
+#: models.py:49
+msgid "Parent category."
+msgstr "Родительская категория."
+
+#: models.py:50 models.py:132
+msgid "Note"
+msgstr "Заметка"
+
+#: models.py:52 models.py:133
+msgid "Status"
+msgstr "Статус"
+
+#: models.py:53
+msgid "Slug"
+msgstr "Слаг"
+
+#: models.py:55 models.py:135
+msgid "Creator"
+msgstr "Создатель"
+
+#: models.py:56 models.py:136
+msgid "Date created"
+msgstr "Дата создания"
+
+#: models.py:57
+msgid "Date modified"
+msgstr "Дата изменения"
+
+#: models.py:59
+msgid "Sort order"
+msgstr "Порядок сортировки"
+
+#: models.py:59
+msgid "Item position among other categories under the same parent."
+msgstr "Позиция категории относительно соседствующих."
+
+#: models.py:63 models.py:131
+msgid "Category"
+msgstr "Категория"
+
+#: models.py:64 toolbox.py:103
+msgid "Categories"
+msgstr "Категории"
+
+#: models.py:139
+msgid "Object ID"
+msgstr "ID объекта"
+
+#: models.py:140
+msgid "Content type"
+msgstr "Тип содержимого"
+
+#: models.py:146
+msgid "Tie"
+msgstr "Связь"
+
+#: models.py:147
+msgid "Ties"
+msgstr "Связи"
+
+#: toolbox.py:198 toolbox.py:246
+msgid "subcategory"
+msgid_plural "subcategories"
+msgstr[0] "подкатегорию"
+msgstr[1] "подкатегории"
+msgstr[2] "подкатегорий"
+
+#: toolbox.py:199
+#, python-format
+msgid ""
+"Unable to remove \"%(target_category)s\" category from \"%(parent_category)s"
+"\": parent category requires at least %(num)s %(subcats_str)s."
+msgstr ""
+"Не удалось удалить категорию \"%(target_category)s\" из \"%(parent_category)s"
+"\": родительская категория должна содержать по меньшей мере %(num)s "
+"%(subcats_str)s."
+
+#: toolbox.py:238
+#, python-format
+msgid ""
+"Unable to create a new \"%(new_category)s\" category inside of "
+"\"%(parent_category)s\": parent category does not support this action."
+msgstr ""
+"Не удалось создать новую категорию \"%(new_category)s\" в "
+"\"%(parent_category)s\": подиетельская категория не поддерживает это "
+"действие."
+
+#: toolbox.py:247
+#, python-format
+msgid ""
+"Unable to add \"%(target_category)s\" category into \"%(parent_category)s\": "
+"parent category can have at most %(num)s %(subcats_str)s."
+msgstr ""
+"Не удалось добавить категорию \"%(target_category)s\" в \"%(parent_category)s"
+"\": родительская категория может содержать максимум %(num)s %(subcats_str)s."
+
+#: templates/sitecats/box.html:15
+msgid "Category name"
+msgstr "Название категории"
+
+#: templates/sitecats/box.html:17
+msgid "Add"
+msgstr "Добавить"
