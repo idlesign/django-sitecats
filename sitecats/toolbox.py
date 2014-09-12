@@ -195,7 +195,9 @@ class CategoryRequestHandler(object):
 
         def check_min_num(num):
             if min_num is not None and num-1 < min_num:
-                raise SitecatsValidationError(_('Unable to remove "%s" category from "%s": parent category requires at least %s %s.') % (category.title, category_list.get_title(), min_num, _n('subcategory', 'subcategories', min_num)))
+                error_msg = _('Unable to remove "%(target_category)s" category from "%(parent_category)s": parent category requires at least %(num)s %(subcats_str)s.') % {
+                    'target_category': category.title, 'parent_category': category_list.get_title(), 'num': min_num, 'subcats_str': _n('subcategory', 'subcategories', min_num)}
+                raise SitecatsValidationError(error_msg)
 
         child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)
         check_min_num(len(child_ids))
@@ -232,13 +234,17 @@ class CategoryRequestHandler(object):
             return exists
 
         if not exists and not category_list.editor.allow_new:
-            raise SitecatsNewCategoryException(_('Unable to create a new "%s" category inside of "%s": parent category does not support this action.') % (category_title, category_list.get_title()))
+            error_msg = _('Unable to create a new "%(new_category)s" category inside of "%(parent_category)s": parent category does not support this action.') % {
+                'new_category': category_title, 'parent_category': category_list.get_title()}
+            raise SitecatsNewCategoryException(error_msg)
 
         max_num = category_list.editor.max_num
 
         def check_max_num(num):
             if max_num is not None and num+1 > max_num:
-                raise SitecatsValidationError(_('Unable to add "%s" category into "%s": parent category can have at most %s %s.') % (category_title, category_list.get_title(), max_num, _n('subcategory', 'subcategories', max_num)))
+                error_mgs = _('Unable to add "%(target_category)s" category into "%(parent_category)s": parent category can have at most %(num)s %(subcats_str)s.') % {
+                    'target_category': category_title, 'parent_category': category_list.get_title(), 'num': max_num, 'subcats_str': _n('subcategory', 'subcategories', max_num)}
+                raise SitecatsValidationError(error_msg)
 
         child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)
         if not exists:  # Add new category.
