@@ -145,7 +145,7 @@ class CategoryRequestHandler(object):
     list_cls = CategoryList  # For customization purposes.
     KNOWN_ACTIONS = ('add', 'remove')
 
-    def __init__(self, request, obj=None):
+    def __init__(self, request, obj=None, error_messages_extra_tags=None):
         """
         :param Request request: Django request object
         :param Model obj: `ModelWithCategory` heir to bind CategoryList objects upon.
@@ -154,6 +154,7 @@ class CategoryRequestHandler(object):
         self._request = request
         self._lists = OrderedDict()
         self._obj = obj
+        self.error_messages_extra_tags = error_messages_extra_tags or ''
 
     def register_lists(self, category_lists, lists_init_kwargs=None, editor_init_kwargs=None):
         """Registers CategoryList objects to handle their requests.
@@ -318,14 +319,13 @@ class CategoryRequestHandler(object):
 
         action_method = getattr(self, 'action_%s' % requested_action)
 
-        # TODO Customize messages.
         try:
             return action_method(self._request, category_list)
         except SitecatsNewCategoryException as e:
-            messages.error(self._request, e)
+            messages.error(self._request, e, extra_tags=self.error_messages_extra_tags, fail_silently=True)
             return None
         except SitecatsValidationError as e:
-            messages.error(self._request, e.messages[0])
+            messages.error(self._request, e.messages[0], extra_tags=self.error_messages_extra_tags, fail_silently=True)
             return None
         finally:
             self._request.POST = {}  # Prevent other forms fail.

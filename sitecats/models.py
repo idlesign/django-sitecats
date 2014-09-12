@@ -212,20 +212,22 @@ class ModelWithCategory(models.Model):
 
         return lists
 
-    def enable_category_lists_editor(self, request, editor_init_kwargs=None, additional_parents_aliases=None, lists_init_kwargs=None):
+    def enable_category_lists_editor(self, request, editor_init_kwargs=None, additional_parents_aliases=None,
+                                     lists_init_kwargs=None, handler_init_kwargs=None):
         """Enables editor functionality for categories of this object.
 
         :param Request request: Django request object
         :param dict|None editor_init_kwargs: Keyword args to initialize category lists editor with. See CategoryList.enable_editor()
         :param list|None additional_parents_aliases: Aliases of categories for editor to render even if this object has no tie to them.
         :param dict|None lists_init_kwargs: Keyword args to initialize CategoryList objects with
+        :param dict|None handler_init_kwargs: Keyword args to initialize CategoryRequestHandler object with
         :return:
         """
         from .toolbox import CategoryRequestHandler
         additional_parents_aliases = additional_parents_aliases or []
         lists_init_kwargs = lists_init_kwargs or {}
         editor_init_kwargs = editor_init_kwargs or {}
-        handler = CategoryRequestHandler(request, self)
+        handler = CategoryRequestHandler(request, self, **handler_init_kwargs)
         lists = self.get_category_lists(init_kwargs=lists_init_kwargs, additional_parents_aliases=additional_parents_aliases)
         handler.register_lists(lists, lists_init_kwargs=lists_init_kwargs, editor_init_kwargs=editor_init_kwargs)
         self._category_editor = handler  # Set link to handler to mutate get_category_lists() behaviour.
