@@ -69,9 +69,9 @@ class Cache(object):
         self._cache = None
         cache.delete(self.CACHE_ENTRY_NAME)
 
-    def _cache_get_entry(self, entry_name, key=None, default=False):
+    def _cache_get_entry(self, entry_name, key=0, default=False):
         """Returns cache entry parameter value by its name."""
-        if key is None:
+        if key == 0:
             return self._cache[entry_name]
         return self._cache[entry_name].get(key, default)
 
@@ -80,7 +80,7 @@ class Cache(object):
 
         :param list ties:
         :param target_object:
-        :return:
+        :return: a list of tie objects
         """
         for tag in ties:
             # Attach category data from cache to prevent db hits.
@@ -96,7 +96,7 @@ class Cache(object):
 
         :param list child_ids:
         :rtype: set
-        :return:
+        :return: a set of parent aliases
         """
         self._cache_init()
         parent_candidates = []
@@ -110,7 +110,7 @@ class Cache(object):
 
         :param str parent_alias: Parent category alias
         :rtype: list
-        :return:
+        :return: a list of child IDs
         """
         self._cache_init()
         return self._cache_get_entry(self.CACHE_NAME_PARENTS, parent_alias, [])
@@ -120,7 +120,7 @@ class Cache(object):
 
         :param str alias:
         :rtype: Category
-        :return:
+        :return: category object
         """
         self._cache_init()
         return self._cache_get_entry(self.CACHE_NAME_ALIASES, alias)
@@ -130,7 +130,7 @@ class Cache(object):
 
         :param str alias:
         :rtype: Category
-        :return:
+        :return: category object
         """
         self._cache_init()
         return self._cache_get_entry(self.CACHE_NAME_IDS, id)
@@ -158,13 +158,13 @@ class Cache(object):
 
         :param str parent_alias:
         :param ModelWithCategory|Model target_object:
-        :return:
+        :return: a list of category objects or tie objects extended with information from their categories.
         """
-        child_ids = self.get_child_ids(parent_alias)
         if target_object is None:  # No filtering by object, list all known categories.
-            return [self.get_category_by_id(cid) for cid in child_ids]
+            return self.get_children_for(parent_alias)
         else:
             filter_kwargs = {}
+            child_ids = self.get_child_ids(parent_alias)
             if child_ids:
                 filter_kwargs.update({'category_id__in': child_ids})
 
