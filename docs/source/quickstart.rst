@@ -67,3 +67,14 @@ Template coding basically boils down to ``sitecats_categories`` template tags us
         </div>
         <!-- Form code goes somewhere here. -->
     {% endblock %}
+
+
+That's roughly what we could have on details page:
+
+.. image:: _static/categories_list.png
+
+
+And on edit page:
+
+
+.. image:: _static/categories_edit.png
