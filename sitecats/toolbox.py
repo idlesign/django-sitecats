@@ -1,6 +1,7 @@
 from inspect import getargspec
 from collections import namedtuple, OrderedDict
 
+from django import VERSION
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy as _n
 from django.utils.six import string_types
 from django.contrib import messages
@@ -9,7 +10,11 @@ from .utils import get_category_model, Cache
 from .exceptions import SitecatsConfigurationError, SitecatsSecurityException, SitecatsNewCategoryException, SitecatsValidationError
 
 
-SITECATS_CACHE = Cache()  # Caching object.
+if VERSION < (1, 7, 0):
+    SITECATS_CACHE = Cache()  # Caching object.
+else:
+    from django.apps import apps
+    SITECATS_CACHE = apps.get_app_config('sitecats').get_categories_cache()
 
 
 class CategoryList(object):
