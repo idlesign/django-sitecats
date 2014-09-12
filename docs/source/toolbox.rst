@@ -37,6 +37,13 @@ ModelWithCategory
 
 
 
+get_category_aliases_under
+--------------------------
+
+.. autofunction:: sitecats.toolbox.get_category_aliases_under
+
+
+
 CategoryList
 ------------
 

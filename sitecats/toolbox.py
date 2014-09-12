@@ -17,6 +17,19 @@ else:
     SITECATS_CACHE = apps.get_app_config('sitecats').get_categories_cache()
 
 
+def get_category_aliases_under(parent_alias=None):
+    """Returns a list of category aliases under the given parent.
+
+    Could be useful to pass to `ModelWithCategory.enable_category_lists_editor`
+    in `additional_parents_aliases` parameter.
+
+    :param str|None parent_alias: Parent alias or None to categories under root
+    :rtype: list
+    :return: a list of category aliases
+    """
+    return [ch.alias for ch in SITECATS_CACHE.get_children_for(parent_alias, only_with_aliases=True)]
+
+
 class CategoryList(object):
     """Represents a set on categories under a parent category on page."""
     _cache_category = None
