@@ -183,12 +183,12 @@ class Cache(object):
         else:
             filter_kwargs = {}
             child_ids = self.get_child_ids(parent_alias)
-            if child_ids:
-                filter_kwargs.update({'category_id__in': child_ids})
-
+            if not child_ids:
+                return []
             filter_kwargs.update({
                 'content_type': ContentType.objects.get_for_model(target_object),
-                'object_id': target_object.id
+                'object_id': target_object.id,
+                'category_id__in': child_ids
             })
 
             # Calculating categories weight too.
