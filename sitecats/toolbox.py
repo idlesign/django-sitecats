@@ -69,7 +69,8 @@ class CategoryList(object):
         """
         self.obj = obj
 
-    def enable_editor(self, allow_add=True, allow_remove=False, allow_new=False, min_num=None, max_num=None, render_button=True):
+    def enable_editor(self, allow_add=True, allow_remove=False, allow_new=False, min_num=None, max_num=None,
+                      render_button=True, category_separator=None):
         """Enables editor controls for this category list.
 
         :param bool allow_add: Flag to allow adding object-to-categories ties
@@ -78,6 +79,7 @@ class CategoryList(object):
         :param None|int min_num: Child items minimum for this list (object-to-categories ties or categories themselves)
         :param None|int max_num: Child items maximum for this list (object-to-categories ties or categories themselves)
         :param bool render_button: Flag to allow buttons rendering for forms of this list
+        :param str|None category_separator: String to consider it a category separator.
         :return:
         """
         # DRY: translate method args into namedtuple args.
@@ -243,42 +245,48 @@ class CategoryRequestHandler(object):
         if not category_list.editor.allow_add:
             raise SitecatsSecurityException('`action_add()` is not supported by `%s` category.' % category_list.alias)
 
-        category_title = request.POST.get('category_title', '').strip()
-        if not category_title:
-            raise SitecatsSecurityException('Unsupported `category_title` value - `%s` - is passed to `action_add()`.' % category_title)
+        titles = request.POST.get('category_title', '').strip()
+        if not titles:
+            raise SitecatsSecurityException('Unsupported `category_title` value - `%s` - is passed to `action_add()`.' % titles)
 
-        exists = SITECATS_CACHE.find_category(category_list.alias, category_title)
+        if category_list.editor.category_separator is None:
+            titles = [titles]
+        else:
+            titles = [title.strip() for title in titles.split(category_list.editor.category_separator) if title.strip()]
 
-        if exists and category_list.obj is None:  # Already exists.
-            return exists
-
-        if not exists and not category_list.editor.allow_new:
-            error_msg = _('Unable to create a new "%(new_category)s" category inside of "%(parent_category)s": parent category does not support this action.') % {
-                'new_category': category_title, 'parent_category': category_list.get_title()}
-            raise SitecatsNewCategoryException(error_msg)
-
-        max_num = category_list.editor.max_num
-
-        def check_max_num(num):
+        def check_max_num(num, max_num, category_title):
             if max_num is not None and num+1 > max_num:
                 subcats_str = ungettext_lazy('subcategory', 'subcategories', max_num)
                 error_msg = _('Unable to add "%(target_category)s" category into "%(parent_category)s": parent category can have at most %(num)s %(subcats_str)s.') % {
                     'target_category': category_title, 'parent_category': category_list.get_title(), 'num': max_num, 'subcats_str': subcats_str}
                 raise SitecatsValidationError(error_msg)
 
-        child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)
-        if not exists:  # Add new category.
-            if category_list.obj is None:
-                check_max_num(len(child_ids))
-            # TODO status
-            target_category = get_category_model().add(category_title, request.user, parent=category_list.get_category_model())
-        else:
-            target_category = exists  # Use existing one for a tie.
+        target_category = None
+        for category_title in titles:
+            exists = SITECATS_CACHE.find_category(category_list.alias, category_title)
 
-        if category_list.obj is not None:
-            # TODO status
-            check_max_num(category_list.obj.get_ties_for_categories_qs(child_ids).count())
-            category_list.obj.add_to_category(target_category, request.user)
+            if exists and category_list.obj is None:  # Already exists.
+                return exists
+
+            if not exists and not category_list.editor.allow_new:
+                error_msg = _('Unable to create a new "%(new_category)s" category inside of "%(parent_category)s": parent category does not support this action.') % {
+                    'new_category': category_title, 'parent_category': category_list.get_title()}
+                raise SitecatsNewCategoryException(error_msg)
+
+            max_num = category_list.editor.max_num
+            child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)
+            if not exists:  # Add new category.
+                if category_list.obj is None:
+                    check_max_num(len(child_ids), max_num, category_title)
+                # TODO status
+                target_category = get_category_model().add(category_title, request.user, parent=category_list.get_category_model())
+            else:
+                target_category = exists  # Use existing one for a tie.
+
+            if category_list.obj is not None:
+                # TODO status
+                check_max_num(category_list.obj.get_ties_for_categories_qs(child_ids).count(), max_num, category_title)
+                category_list.obj.add_to_category(target_category, request.user)
 
         return target_category
 
