@@ -22,8 +22,9 @@ Requirements
 2. Django 1.5+
 3. Django Auth contrib enabled
 4. Django Admin contrib enabled (optional)
-5. Django Messages contrib enabled (optional)
-6. South (for DB migrations with Django < 1.7)
+5. django-admirarchy for Django Admin contrib (optional)
+6. Django Messages contrib enabled (optional)
+7. South (for DB migrations with Django < 1.7)
 
 
 
