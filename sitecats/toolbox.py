@@ -2,7 +2,7 @@ from inspect import getargspec
 from collections import namedtuple, OrderedDict
 
 from django import VERSION
-from django.utils.translation import ugettext_lazy as _, ungettext_lazy as _n
+from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 from django.utils.six import string_types
 from django.contrib import messages
 
@@ -195,8 +195,9 @@ class CategoryRequestHandler(object):
 
         def check_min_num(num):
             if min_num is not None and num-1 < min_num:
+                subcats_str = ungettext_lazy('subcategory', 'subcategories', min_num)
                 error_msg = _('Unable to remove "%(target_category)s" category from "%(parent_category)s": parent category requires at least %(num)s %(subcats_str)s.') % {
-                    'target_category': category.title, 'parent_category': category_list.get_title(), 'num': min_num, 'subcats_str': _n('subcategory', 'subcategories', min_num)}
+                    'target_category': category.title, 'parent_category': category_list.get_title(), 'num': min_num, 'subcats_str': subcats_str}
                 raise SitecatsValidationError(error_msg)
 
         child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)
@@ -242,8 +243,9 @@ class CategoryRequestHandler(object):
 
         def check_max_num(num):
             if max_num is not None and num+1 > max_num:
-                error_mgs = _('Unable to add "%(target_category)s" category into "%(parent_category)s": parent category can have at most %(num)s %(subcats_str)s.') % {
-                    'target_category': category_title, 'parent_category': category_list.get_title(), 'num': max_num, 'subcats_str': _n('subcategory', 'subcategories', max_num)}
+                subcats_str = ungettext_lazy('subcategory', 'subcategories', max_num)
+                error_msg = _('Unable to add "%(target_category)s" category into "%(parent_category)s": parent category can have at most %(num)s %(subcats_str)s.') % {
+                    'target_category': category_title, 'parent_category': category_list.get_title(), 'num': max_num, 'subcats_str': subcats_str}
                 raise SitecatsValidationError(error_msg)
 
         child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)

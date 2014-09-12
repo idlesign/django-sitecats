@@ -43,8 +43,8 @@ class CategoryBase(models.Model):
 
     """
     title = models.CharField(_('Title'), max_length=250, help_text=_('Category name.'))
-    alias = CharFieldNullable(_('Alias'), max_length=80, help_text=_('Short name to address category from a template.'), blank=True, null=True, unique=True)
-    is_locked = models.BooleanField(_('Locked'), help_text=_('Categories used in application code are locked, their aliases are read only. Such categories can be deleted only from application code.'), default=False)
+    alias = CharFieldNullable(_('Alias'), max_length=80, help_text=_('Short name to address category from application code.'), blank=True, null=True, unique=True)
+    is_locked = models.BooleanField(_('Locked'), help_text=_('Categories addressed from application code are locked, their aliases can not be changed. Such categories can be deleted from application code only.'), default=False)
 
     parent = models.ForeignKey('self', related_name='%(class)s_parents', verbose_name=_('Parent'), help_text=_('Parent category.'), db_index=True, null=True, blank=True)
     note = models.TextField(_('Note'), blank=True)

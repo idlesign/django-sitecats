@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-12 13:51+0700\n"
+"POT-Creation-Date: 2014-09-12 14:13+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,7 +34,7 @@ msgid "Alias"
 msgstr ""
 
 #: models.py:46
-msgid "Short name to address category from a template."
+msgid "Short name to address category from application code."
 msgstr ""
 
 #: models.py:47
@@ -43,8 +43,8 @@ msgstr ""
 
 #: models.py:47
 msgid ""
-"Categories used in application code are locked, their aliases are read only. "
-"Such categories can be deleted only from application code."
+"Categories addressed from application code are locked, their aliases can not "
+"be changed. Such categories can be deleted from application code only."
 msgstr ""
 
 #: models.py:49
@@ -111,21 +111,27 @@ msgstr ""
 msgid "Ties"
 msgstr ""
 
-#: toolbox.py:198
+#: toolbox.py:198 toolbox.py:246
+msgid "subcategory"
+msgid_plural "subcategories"
+msgstr[0] ""
+msgstr[1] ""
+
+#: toolbox.py:199
 #, python-format
 msgid ""
 "Unable to remove \"%(target_category)s\" category from \"%(parent_category)s"
 "\": parent category requires at least %(num)s %(subcats_str)s."
 msgstr ""
 
-#: toolbox.py:237
+#: toolbox.py:238
 #, python-format
 msgid ""
 "Unable to create a new \"%(new_category)s\" category inside of "
 "\"%(parent_category)s\": parent category does not support this action."
 msgstr ""
 
-#: toolbox.py:245
+#: toolbox.py:247
 #, python-format
 msgid ""
 "Unable to add \"%(target_category)s\" category into \"%(parent_category)s\": "
