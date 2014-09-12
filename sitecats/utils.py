@@ -105,6 +105,24 @@ class Cache(object):
                 parent_candidates.append(parent)
         return set(parent_candidates)  # Make unique.
 
+    def get_children_for(self, parent_alias=None, only_with_aliases=False):
+        """Returns a list with with categories under the given parent.
+
+        :param str|None parent_alias: Parent category alias or None for categories under root
+        :param bool only_with_aliases: Flag to return only children with aliases
+        :return: a list of category objects
+        """
+        self._cache_init()
+        child_ids = self.get_child_ids(parent_alias)
+        if only_with_aliases:
+            children = []
+            for cid in child_ids:
+                category = self.get_category_by_id(cid)
+                if category.alias:
+                    children.append(category)
+            return children
+        return [self.get_category_by_id(cid) for cid in child_ids]
+
     def get_child_ids(self, parent_alias):
         """Returns child IDs of the given parent category
 
