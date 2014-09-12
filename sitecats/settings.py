@@ -1,5 +1,6 @@
 from django.conf import settings
 
+
 # Path to a model to be used as a Category.
 MODEL_CATEGORY = getattr(settings, 'SITECATS_MODEL_CATEGORY', 'sitecats.Category')
 

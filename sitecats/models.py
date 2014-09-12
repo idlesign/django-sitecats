@@ -159,9 +159,9 @@ class Tie(TieBase):
 
 
 class ModelWithCategory(models.Model):
-    """Helper base class for models with tags.
+    """Helper class for models with tags.
 
-    Inherit from this model to be able to categorize model instances.
+    Mix in this helper to your model class to be able to categorize model instances.
 
     """
     categories = generic.GenericRelation(MODEL_TIE)

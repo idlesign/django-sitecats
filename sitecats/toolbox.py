@@ -41,7 +41,7 @@ class CategoryList(object):
         If not set CategoryList will render actual categories.
         If set CategoryList will render just object-to-categories ties.
 
-        :param obj:
+        :param obj: `ModelWithCategory` heir
         :return:
         """
         self.obj = obj

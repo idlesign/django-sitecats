@@ -18,6 +18,55 @@ import sys, os
 sys.path.insert(0, os.path.abspath('../../'))
 from sitecats import VERSION
 
+# -- Mocking ------------------------------------------------------------------
+
+# This is used to mock certain modules.
+# It helps to build docs in environments where those modules are not available.
+# E.g. it could be useful for http://readthedocs.org/
+MODULES_TO_MOCK = [
+    'etc',
+    'etc.toolbox',
+    'django.contrib.contenttypes.models',
+    'django.core.cache',
+    'django.conf',
+    'django.db',
+    'django.db.models',
+    'django.contrib.contenttypes',
+    'django.conf',
+    'django.utils.encoding',
+    'sitecats.exceptions',
+]
+
+if MODULES_TO_MOCK:
+
+    class ModuleMock(object):
+
+        __all__ = []
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __call__(self, *args, **kwargs):
+            return ModuleMock()
+
+        def __iter__(self):
+            return iter([])
+
+        @classmethod
+        def __getattr__(cls, name):
+            if name in ('__file__', '__path__'):
+                return '/dev/null'
+            elif name.upper() != name and name[0] == name[0].upper():
+                # Mock classes.
+                MockType = type(name, (ModuleMock,), {})
+                MockType.__module__ = __name__
+                return MockType
+            return ModuleMock()
+
+    for mod_name in MODULES_TO_MOCK:
+        sys.modules[mod_name] = ModuleMock()
+
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -26,6 +75,9 @@ from sitecats import VERSION
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc']
+
+# Instruct autoclass directive to document both class and __init__ docstrings.
+autoclass_content = 'both'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -64,7 +116,7 @@ release = '.'.join(map(str, VERSION))
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['rst_guide.rst']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None

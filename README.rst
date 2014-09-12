@@ -15,7 +15,7 @@ Description
 
 *Django reusable application for content categorization.*
 
-Nay, you say, all that tags business lacks structuring.
+Nay, - you say, - all that tags business lacks structuring.
 
 This application is just about structuring your data: build categories hierarchy and link your site entities to those categories.
 
@@ -44,14 +44,13 @@ This application is just about structuring your data: build categories hierarchy
                                 editor_init_kwargs={'allow_new': True},
                                 additional_parents_aliases=['language', 'os'])
 
-
         form = ... # Your usual Article edit handling code will be here.
 
         return render(request, 'article.html', {'article': article, 'form': form})
 
 
 
-Template codes basically boils down to ``sitecats_categories`` template tags usage:
+Template coding basically boils down to ``sitecats_categories`` template tags usage:
 
 .. code-block:: html
 
