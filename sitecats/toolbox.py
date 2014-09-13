@@ -65,12 +65,11 @@ class CategoryList(object):
         If set CategoryList will render just object-to-categories ties.
 
         :param obj: `ModelWithCategory` heir
-        :return:
         """
         self.obj = obj
 
     def enable_editor(self, allow_add=True, allow_remove=False, allow_new=False, min_num=None, max_num=None,
-                      render_button=True, category_separator=None):
+                      render_button=True, category_separator=None, show_category_choices=True):
         """Enables editor controls for this category list.
 
         :param bool allow_add: Flag to allow adding object-to-categories ties
@@ -80,7 +79,7 @@ class CategoryList(object):
         :param None|int max_num: Child items maximum for this list (object-to-categories ties or categories themselves)
         :param bool render_button: Flag to allow buttons rendering for forms of this list
         :param str|None category_separator: String to consider it a category separator.
-        :return:
+        :param bool show_category_choices: Flag to render a choice list of available subcategories for each CategoryList
         """
         # DRY: translate method args into namedtuple args.
         args, n, n, n = getargspec(self.enable_editor)
@@ -138,6 +137,14 @@ class CategoryList(object):
         """
         return SITECATS_CACHE.get_categories(self.alias, self.obj)
 
+    def get_choices(self):
+        """Returns available subcategories choices list.
+
+        :rtype: list
+        :return: list of Category objects
+        """
+        return SITECATS_CACHE.get_children_for(self.alias)
+
 
 class CategoryRequestHandler(object):
     """This one can handle requests issued by CategoryList editors. Can be used in views."""
@@ -149,7 +156,6 @@ class CategoryRequestHandler(object):
         """
         :param Request request: Django request object
         :param Model obj: `ModelWithCategory` heir to bind CategoryList objects upon.
-        :return:
         """
         self._request = request
         self._lists = OrderedDict()
@@ -161,7 +167,6 @@ class CategoryRequestHandler(object):
 
         :param list category_lists: CategoryList objects
         :param dict lists_init_kwargs: Attributes to apply to each of CategoryList objects
-        :return:
         """
         lists_init_kwargs = lists_init_kwargs or {}
         editor_init_kwargs = editor_init_kwargs or {}

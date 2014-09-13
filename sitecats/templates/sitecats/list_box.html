@@ -16,7 +16,11 @@
 
                     {% if list.editor.render_button %}<input type="submit" value="{% trans "Add" %}">{% endif %}
                 </form>
-                <div id="hint_box_{{ list.get_id }}" class="hint_box"></div>
+                <div id="choice_box_{{ list.get_id }}" class="choice_box">
+                    {% if list.editor.show_category_choices %}
+                        {% include "sitecats/choice_box.html" with choices=list.get_choices %}
+                    {% endif %}
+                </div>
             </div>
         {% endif %}
     </div>
