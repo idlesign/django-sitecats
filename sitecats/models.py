@@ -84,7 +84,7 @@ class CategoryBase(models.Model):
         :return: str
         """
         if target_object is not None and hasattr(target_object, 'get_category_absolute_url'):
-            return lambda: target_object.get_category_absolute_url(self)
+            return target_object.get_category_absolute_url(self)
         return reverse('sitecats-listing', args=[str(self.id)])  # TODO think over
 
     def delete(self, *args, **kwargs):

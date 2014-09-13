@@ -1,6 +1,19 @@
 django-sitecats changelog
 =========================
 
+
+v0.2.0
+------
++ get_category_aliases_under() added into toolbox.
++ Implemented `category_separator` param support for category editor.
++ CategoryRequestHandler error messages now can be customized.
++ Implemented locked category restrictions for Django Admin.
++ Implemented category choices for editors.
+* Fixed category ordering.
+* Fixed rendering category with no subcategories in editor.
+* Fixed Cache._get_cache_entry() fail to get categories from root.
+
+
 v0.1.0
 ------
 + Basic functionality.

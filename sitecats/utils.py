@@ -77,23 +77,6 @@ class Cache(object):
             return self._cache[entry_name]
         return self._cache[entry_name].get(key, default)
 
-    def _extend_ties(self, ties, target_object):
-        """Extends ties objects with data from their categories.
-
-        :param list ties:
-        :param target_object:
-        :return: a list of tie objects
-        """
-        for tag in ties:
-            # Attach category data from cache to prevent db hits.
-            # TODO Cache categories, urls.
-            # TODO Move into separate tag.
-            category = self.get_category_by_id(tag['category_id'])
-            tag.update(category.__dict__)
-            # Resolves URL for a category.
-            tag['absolute_url'] = category.get_absolute_url(target_object)
-        return ties
-
     def sort_aliases(self, aliases):
         """Sorts the given aliases list, returns a sorted list.
 
@@ -207,5 +190,11 @@ class Cache(object):
             })
 
             # Calculating categories weight too.
-            ties = list(get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category')))
-            return self._extend_ties(ties, target_object)
+            # dicts with `ties_num` and `category_id`
+            stats = {item['category_id']: item['ties_num'] for item in  get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category'))}
+            categories = []
+            for cat_id, ties_num in stats.items():
+                cat = self.get_category_by_id(cat_id)
+                cat.ties_num = ties_num
+                categories.append(cat)
+            return categories

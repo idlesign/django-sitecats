@@ -9,6 +9,21 @@ register = template.Library()
 
 
 @register.tag
+def sitecats_url(parser, token):
+    tokens = token.split_contents()
+    as_clause = detect_clause(parser, 'as', tokens)
+    target_obj = detect_clause(parser, 'using', tokens)
+    category = detect_clause(parser, 'for', tokens)
+
+    tokens_num = len(tokens)
+
+    if tokens_num in (1, 3):
+        return sitecats_urlNode(category, target_obj, as_clause)
+    else:
+        raise template.TemplateSyntaxError('`sitecats_url` tag expects the following notation: {% sitecats_url for my_category as "someurl" %}.')
+
+
+@register.tag
 def sitecats_categories(parser, token):
     tokens = token.split_contents()
     use_template = detect_clause(parser, 'template', tokens)
@@ -20,6 +35,31 @@ def sitecats_categories(parser, token):
         return sitecats_categoriesNode(target_obj, use_template)
     else:
         raise template.TemplateSyntaxError('`sitecats_categories` tag expects the following notation: {% sitecats_categories from my_categories_list template "sitecats/my_categories.html" %}.')
+
+
+class sitecats_urlNode(template.Node):
+
+    def __init__(self, category, target_obj, as_var):
+        self.as_var = as_var
+        self.target_obj = target_obj
+        self.category = category
+
+    def render(self, context):
+        resolve = lambda arg: arg.resolve(context) if isinstance(arg, template.FilterExpression) else arg
+
+        category = resolve(self.category)
+        target_obj = resolve(self.target_obj)
+
+        url = category.get_absolute_url(target_obj)
+
+        if not self.as_var:
+            return url
+
+        context.push()
+        context[self.as_var] = url
+        context.pop()
+
+        return None
 
 
 class sitecats_categoriesNode(template.Node):
