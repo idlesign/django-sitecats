@@ -203,7 +203,7 @@ class ModelWithCategory(models.Model):
         cat_ids = [item[0] for item in self.categories.model.objects.filter(content_type=ctype, object_id=self.id).values_list('category_id').all()]
         parent_aliases = SITECATS_CACHE.get_parents_for(cat_ids).union(additional_parents_aliases)
         lists = []
-        for parent_alias in parent_aliases:
+        for parent_alias in SITECATS_CACHE.sort_aliases(parent_aliases):
             catlist = CategoryList(parent_alias, **catlist_kwargs)  # TODO Burned in class name. Make more customizable.
             catlist.set_obj(self)
             lists.append(catlist)

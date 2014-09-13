@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import OrderedDict
 
 from etc.toolbox import get_model_class_from_settings
 from django.contrib.contenttypes.models import ContentType
@@ -46,12 +46,14 @@ class Cache(object):
             ids = {category.id: category for category in categories}
             aliases = {category.alias: category for category in categories if category.alias}
 
-            parent_to_children = defaultdict(list)
+            parent_to_children = OrderedDict()  # Preserve aliases order.
             for category in categories:
                 parent_category = ids.get(category.parent_id, False)
                 parent_alias = None
                 if parent_category:
                     parent_alias = parent_category.alias
+                if parent_alias not in parent_to_children:
+                    parent_to_children[parent_alias] = []
                 parent_to_children[parent_alias].append(category.id)
 
             cache_ = {
@@ -90,6 +92,18 @@ class Cache(object):
             # Resolves URL for a category.
             tag['absolute_url'] = category.get_absolute_url(target_object)
         return ties
+
+    def sort_aliases(self, aliases):
+        """Sorts the given aliases list, returns a sorted list.
+
+        :param list aliases:
+        :return: sorted aliases list
+        """
+        self._cache_init()
+        if not aliases:
+            return aliases
+        parent_aliases = self._cache_get_entry(self.CACHE_NAME_PARENTS).keys()
+        return [parent_alias for parent_alias in parent_aliases if parent_alias in aliases]
 
     def get_parents_for(self, child_ids):
         """Returns parent aliases for a list of child IDs.
