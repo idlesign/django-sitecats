@@ -246,7 +246,7 @@ class ModelWithCategory(models.Model):
             'creator': user,
             'linked_object': self
         }
-        tie = self.categories.model(**init_kwargs)
+        tie = self.categories.model(**init_kwargs)  # That's a model of Tie.
         tie.save()
         return tie
 

@@ -54,7 +54,15 @@ class CategoryList(object):
         self.editor = None
 
     def __str__(self):
-        return self.alias
+        """Returns alias.
+
+        :rtype: str
+        :return: alias
+        """
+        s = self.alias
+        if s is None:
+            s = ''
+        return s
 
     def set_obj(self, obj):
         """Sets a target object for categories to be filtered upon.
@@ -87,9 +95,9 @@ class CategoryList(object):
         self.editor = namedtuple('CategoryEditor', args)(**{arg: locals_[arg] for arg in args})
 
     def get_category_model(self):
-        """Returns category model for this list (parent category for categories in the list).
+        """Returns category model for this list (parent category for categories in the list) or None.
 
-        :return: CategoryModel
+        :return: CategoryModel|None
         """
         if self._cache_category is None:
             self._cache_category = SITECATS_CACHE.get_category_by_alias(self.alias)

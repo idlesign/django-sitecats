@@ -87,6 +87,7 @@ class Cache(object):
         for tag in ties:
             # Attach category data from cache to prevent db hits.
             # TODO Cache categories, urls.
+            # TODO Move into separate tag.
             category = self.get_category_by_id(tag['category_id'])
             tag.update(category.__dict__)
             # Resolves URL for a category.
@@ -151,11 +152,11 @@ class Cache(object):
         """Returns Category object by its alias.
 
         :param str alias:
-        :rtype: Category
+        :rtype: Category|None
         :return: category object
         """
         self._cache_init()
-        return self._cache_get_entry(self.CACHE_NAME_ALIASES, alias)
+        return self._cache_get_entry(self.CACHE_NAME_ALIASES, alias, None)
 
     def get_category_by_id(self, id):
         """Returns Category object by its id.
