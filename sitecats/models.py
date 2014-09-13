@@ -193,17 +193,18 @@ class ModelWithCategory(models.Model):
         from .toolbox import CategoryList, SITECATS_CACHE
         init_kwargs = init_kwargs or {}
         additional_parents_aliases = additional_parents_aliases or []
+
+        catlist_kwargs = {}
+        if self._category_lists_init_kwargs is not None:
+            catlist_kwargs.update(self._category_lists_init_kwargs)
+        catlist_kwargs.update(init_kwargs)
+
         ctype = ContentType.objects.get_for_model(self)
         cat_ids = [item[0] for item in self.categories.model.objects.filter(content_type=ctype, object_id=self.id).values_list('category_id').all()]
-        parent_aliases = SITECATS_CACHE.get_parents_for(cat_ids)
-        parent_aliases = list(parent_aliases) + additional_parents_aliases
+        parent_aliases = SITECATS_CACHE.get_parents_for(cat_ids).union(additional_parents_aliases)
         lists = []
         for parent_alias in parent_aliases:
-            kwargs = {}
-            if self._category_lists_init_kwargs is not None:
-                kwargs.update(self._category_lists_init_kwargs)
-            kwargs.update(init_kwargs)
-            catlist = CategoryList(parent_alias, **kwargs)  # TODO Burned in class name. Make more customizable.
+            catlist = CategoryList(parent_alias, **catlist_kwargs)  # TODO Burned in class name. Make more customizable.
             catlist.set_obj(self)
             lists.append(catlist)
 
