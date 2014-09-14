@@ -4,7 +4,6 @@ from sitecats import VERSION
 
 
 PATH_BASE = os.path.dirname(__file__)
-PATH_BIN = os.path.join(PATH_BASE, 'bin')
 
 
 f = open(os.path.join(PATH_BASE, 'README.rst'))
