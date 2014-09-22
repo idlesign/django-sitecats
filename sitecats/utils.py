@@ -190,33 +190,51 @@ class Cache(object):
                 break
         return found
 
-    def get_categories(self, parent_alias=None, target_object=None):
+    def get_ties_stats(self, categories, target_model=None):
+        """Returns a dict with categories popularity stats.
+
+        :param list categories:
+        :param Model|None target_model:
+        :return:
+        """
+        filter_kwargs = {
+            'category_id__in': categories
+        }
+        if target_model is not None:
+            is_cls = hasattr(target_model, '__name__')
+            if is_cls:
+                concrete = False
+            else:
+                concrete = True
+                filter_kwargs['object_id'] = target_model.id
+            filter_kwargs['content_type'] = ContentType.objects.get_for_model(target_model, for_concrete_model=concrete)
+
+        return {item['category_id']: item['ties_num'] for item in get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category'))}
+
+    def get_categories(self, parent_alias=None, target_object=None, with_ties_only=True):
         """Returns subcategories (or ties if `target_object` is set)
         for the given parent category.
 
         :param str parent_alias:
         :param ModelWithCategory|Model target_object:
+        :param bool with_ties_only: Flag to get only categories with ties. Ties stats are stored in `ties_num` attrs.
         :return: a list of category objects or tie objects extended with information from their categories.
         """
-        if target_object is None:  # No filtering by object, list all known categories.
-            return self.get_children_for(parent_alias)
-        else:
-            filter_kwargs = {}
-            child_ids = self.get_child_ids(parent_alias)
-            if not child_ids:
-                return []
-            filter_kwargs.update({
-                'content_type': ContentType.objects.get_for_model(target_object),
-                'object_id': target_object.id,
-                'category_id__in': child_ids
-            })
 
-            # Calculating categories weight too.
-            # dicts with `ties_num` and `category_id`
-            stats = {item['category_id']: item['ties_num'] for item in  get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category'))}
-            categories = []
-            for cat_id, ties_num in stats.items():
-                cat = self.get_category_by_id(cat_id)
-                cat.ties_num = ties_num
-                categories.append(cat)
-            return categories
+        child_ids = self.get_child_ids(parent_alias)
+        if not child_ids:
+            return []
+
+        categories = []
+        ties = {}
+        ids = child_ids
+        if with_ties_only:
+            ties = self.get_ties_stats(child_ids, target_object)
+            ids = ties.keys()
+
+        for cat_id in ids:
+            cat = self.get_category_by_id(cat_id)
+            if with_ties_only:
+                cat.ties_num = ties.get(cat_id, 0)
+            categories.append(cat)
+        return categories
