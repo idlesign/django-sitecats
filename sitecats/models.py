@@ -179,6 +179,10 @@ class ModelWithCategory(models.Model):
         :rtype: list|CategoryRequestHandler
         :return:
         """
+
+        if self._category_editor is not None:  # Return editor lists instead of plain lists if it's enabled.
+            return self._category_editor.get_lists()
+
         from .toolbox import get_category_lists
         init_kwargs = init_kwargs or {}
 
@@ -188,9 +192,6 @@ class ModelWithCategory(models.Model):
         catlist_kwargs.update(init_kwargs)
 
         lists = get_category_lists(catlist_kwargs, additional_parents_aliases, obj=self)
-
-        if self._category_editor is not None:  # Return editor lists instead of plain lists if it's enabled.
-            return self._category_editor.get_lists()
 
         return lists
 

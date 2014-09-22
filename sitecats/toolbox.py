@@ -44,10 +44,21 @@ def get_category_lists(init_kwargs=None, additional_parents_aliases=None, obj=No
         cat_ids = [item[0] for item in get_tie_model().objects.filter(content_type=ctype, object_id=obj.id).values_list('category_id').all()]
         parent_aliases = get_cache().get_parents_for(cat_ids).union(additional_parents_aliases)
     lists = []
-    for parent_alias in get_cache().sort_aliases(parent_aliases):
+
+    aliases = get_cache().sort_aliases(parent_aliases)
+    categories_cache = get_cache().get_categories(aliases, obj)
+
+    for parent_alias in aliases:
         catlist = CategoryList(parent_alias, **init_kwargs)  # TODO Burned in class name. Make more customizable.
         if obj is not None:
             catlist.set_obj(obj)
+        # Optimization. To get DB hits down.
+        cache = []
+        try:
+            cache = categories_cache[parent_alias]
+        except KeyError:
+            pass
+        catlist.set_get_categories_cache(cache)
         lists.append(catlist)
 
     return lists
@@ -57,6 +68,7 @@ def get_category_lists(init_kwargs=None, additional_parents_aliases=None, obj=No
 class CategoryList(object):
     """Represents a set on categories under a parent category on page."""
     _cache_category = None
+    _cache_get_categories = None
 
     #TODO custom template
 
@@ -90,6 +102,14 @@ class CategoryList(object):
         if s is None:
             s = ''
         return s
+
+    def set_get_categories_cache(self, val):
+        """Sets prefetched data to be returned by `get_categories()` later on.
+
+        :param list val:
+        :return:
+        """
+        self._cache_get_categories = val
 
     def get_category_url(self, category):
         """Returns URL for a given Category object from this list.
@@ -186,6 +206,8 @@ class CategoryList(object):
         :rtype: list
         :return: a list of actual subcategories
         """
+        if self._cache_get_categories is not None:
+            return self._cache_get_categories
         return get_cache().get_categories(self.alias, self.obj)
 
     def get_choices(self):

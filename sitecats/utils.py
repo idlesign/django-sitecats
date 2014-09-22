@@ -211,30 +211,48 @@ class Cache(object):
 
         return {item['category_id']: item['ties_num'] for item in get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category'))}
 
-    def get_categories(self, parent_alias=None, target_object=None, with_ties_only=True):
+    def get_categories(self, parent_aliases=None, target_object=None, with_ties_only=True):
         """Returns subcategories (or ties if `target_object` is set)
         for the given parent category.
 
-        :param str parent_alias:
+        :param str|None|list parent_aliases:
         :param ModelWithCategory|Model target_object:
         :param bool with_ties_only: Flag to get only categories with ties. Ties stats are stored in `ties_num` attrs.
         :return: a list of category objects or tie objects extended with information from their categories.
         """
 
-        child_ids = self.get_child_ids(parent_alias)
-        if not child_ids:
-            return []
+        if not isinstance(parent_aliases, list):
+            parent_aliases = [parent_aliases]
 
-        categories = []
-        ties = {}
-        ids = child_ids
-        if with_ties_only:
-            ties = self.get_ties_stats(child_ids, target_object)
-            ids = ties.keys()
-
-        for cat_id in ids:
-            cat = self.get_category_by_id(cat_id)
+        all_chlidren = []
+        parents_to_children = OrderedDict()
+        for parent_alias in parent_aliases:
+            child_ids = self.get_child_ids(parent_alias)
+            parents_to_children[parent_alias] = child_ids
             if with_ties_only:
-                cat.ties_num = ties.get(cat_id, 0)
-            categories.append(cat)
+                all_chlidren.extend(child_ids)
+
+        ties = {}
+        if with_ties_only:
+            source = OrderedDict()
+            ties = self.get_ties_stats(all_chlidren, target_object)
+            for parent_alias, child_ids in parents_to_children.items():
+                common = set(ties.keys()).intersection(child_ids)
+                if common:
+                    source[parent_alias] = common
+
+        else:
+            source = parents_to_children
+
+        categories = OrderedDict()
+        for parent_alias, child_ids in source.items():
+            for cat_id in child_ids:
+                cat = self.get_category_by_id(cat_id)
+                if with_ties_only:
+                    cat.ties_num = ties.get(cat_id, 0)
+
+                if parent_alias not in categories:
+                    categories[parent_alias] = []
+
+                categories[parent_alias].append(cat)
         return categories
