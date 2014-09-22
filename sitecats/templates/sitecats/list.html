@@ -4,7 +4,7 @@
 {% for cat in all_categories %}
     <li>
     {% if show_links %}
-        <a href="{% sitecats_url for cat using list.obj %}" data-tiesnum="{{ cat.ties_num }}" data-catid="{{ cat.id }}" class="list_entry {{ list.cat_html_class }}" title="{{ cat.note }}">{{ cat.title }}</a>
+        <a href="{% sitecats_url for cat using list %}" data-tiesnum="{{ cat.ties_num }}" data-catid="{{ cat.id }}" class="list_entry {{ list.cat_html_class }}" title="{{ cat.note }}">{{ cat.title }}</a>
     {% else %}
         <span data-tiesnum="{{ cat.ties_num }}" data-catid="{{ cat.id }}" class="list_entry {{ list.cat_html_class }}" title="{{ cat.note }}">{{ cat.title }}</span>
     {% endif %}

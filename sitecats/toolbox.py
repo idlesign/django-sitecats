@@ -1,21 +1,15 @@
 from inspect import getargspec
-from collections import namedtuple, OrderedDict
+from collections import namedtuple, OrderedDict, Callable
 
-from django import VERSION
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 from django.utils.six import string_types
+from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 
-from .utils import get_category_model, Cache
+from .settings import UNRESOLVED_URL_MARKER
+from .utils import get_category_model, get_tie_model, get_cache
 from .exceptions import SitecatsConfigurationError, SitecatsSecurityException, SitecatsNewCategoryException, SitecatsValidationError
-
-
-if VERSION < (1, 7, 0):
-    SITECATS_CACHE = Cache()  # Caching object.
-else:
-    from django.apps import apps
-    SITECATS_CACHE = apps.get_app_config('sitecats').get_categories_cache()
 
 
 def get_category_aliases_under(parent_alias=None):
@@ -28,7 +22,35 @@ def get_category_aliases_under(parent_alias=None):
     :rtype: list
     :return: a list of category aliases
     """
-    return [ch.alias for ch in SITECATS_CACHE.get_children_for(parent_alias, only_with_aliases=True)]
+    return [ch.alias for ch in get_cache().get_children_for(parent_alias, only_with_aliases=True)]
+
+
+def get_category_lists(init_kwargs=None, additional_parents_aliases=None, obj=None):
+    """Returns a list of CategoryList objects, optionally associated with
+    this model instance.
+
+    :param dict|None init_kwargs:
+    :param list|None additional_parents_aliases:
+    :param Model|None obj: Model instance to get categories for
+    :rtype: list
+    :return:
+    """
+    init_kwargs = init_kwargs or {}
+    additional_parents_aliases = additional_parents_aliases or []
+
+    parent_aliases = additional_parents_aliases
+    if obj is not None:
+        ctype = ContentType.objects.get_for_model(obj)
+        cat_ids = [item[0] for item in get_tie_model().objects.filter(content_type=ctype, object_id=obj.id).values_list('category_id').all()]
+        parent_aliases = get_cache().get_parents_for(cat_ids).union(additional_parents_aliases)
+    lists = []
+    for parent_alias in get_cache().sort_aliases(parent_aliases):
+        catlist = CategoryList(parent_alias, **init_kwargs)  # TODO Burned in class name. Make more customizable.
+        if obj is not None:
+            catlist.set_obj(obj)
+        lists.append(catlist)
+
+    return lists
 
 
 @python_2_unicode_compatible
@@ -42,12 +64,17 @@ class CategoryList(object):
         """
         :param str alias: Alias of a category to construct a list from (list will include subcategories)
         :param bool show_title: Flag to render parent category title
-        :param bool show_links: Flag to render links for category pages
+        :param bool|callable show_links: Boolean flag to render links for category pages,
+            or a callable which accepts Category instance and returns an URL for it.
         :param str cat_html_class: HTML classes to be added to categories
         :return:
         """
         self.alias = alias
         self.show_title = show_title
+        self._url_resolver = None
+        if isinstance(show_links, Callable):
+            self._url_resolver = show_links
+            show_links = True
         self.show_links = show_links
         self.cat_html_class = cat_html_class
         self.obj = None
@@ -63,6 +90,22 @@ class CategoryList(object):
         if s is None:
             s = ''
         return s
+
+    def get_category_url(self, category):
+        """Returns URL for a given Category object from this list.
+
+         First tries to get it with a callable passed as `show_links` init param of this list.
+         Secondly tries to get it with `get_category_absolute_url` method of an object associated with this list.
+
+        :param Category category:
+        :rtype: str
+        :return: URL
+        """
+        if self._url_resolver is not None:
+            return self._url_resolver(category)
+        if self.obj and hasattr(self.obj, 'get_category_absolute_url'):
+            return self.obj.get_category_absolute_url(category)
+        return UNRESOLVED_URL_MARKER
 
     def set_obj(self, obj):
         """Sets a target object for categories to be filtered upon.
@@ -100,7 +143,7 @@ class CategoryList(object):
         :return: CategoryModel|None
         """
         if self._cache_category is None:
-            self._cache_category = SITECATS_CACHE.get_category_by_alias(self.alias)
+            self._cache_category = get_cache().get_category_by_alias(self.alias)
         return self._cache_category
 
     def get_category_attr(self, name, default=False):
@@ -143,7 +186,7 @@ class CategoryList(object):
         :rtype: list
         :return: a list of actual subcategories
         """
-        return SITECATS_CACHE.get_categories(self.alias, self.obj)
+        return get_cache().get_categories(self.alias, self.obj)
 
     def get_choices(self):
         """Returns available subcategories choices list.
@@ -151,7 +194,7 @@ class CategoryList(object):
         :rtype: list
         :return: list of Category objects
         """
-        return SITECATS_CACHE.get_children_for(self.alias)
+        return get_cache().get_children_for(self.alias)
 
 
 class CategoryRequestHandler(object):
@@ -213,7 +256,7 @@ class CategoryRequestHandler(object):
         if not category_id:
             raise SitecatsSecurityException('Unsupported `category_id` value - `%s` - is passed to `action_remove()`.' % category_id)
 
-        category = SITECATS_CACHE.get_category_by_id(category_id)
+        category = get_cache().get_category_by_id(category_id)
         if not category:
             raise SitecatsSecurityException('Unable to get `%s` category in `action_remove()`.' % category_id)
 
@@ -234,7 +277,7 @@ class CategoryRequestHandler(object):
                     'target_category': category.title, 'parent_category': category_list.get_title(), 'num': min_num, 'subcats_str': subcats_str}
                 raise SitecatsValidationError(error_msg)
 
-        child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)
+        child_ids = get_cache().get_child_ids(category_list.alias)
         check_min_num(len(child_ids))
         if category_list.obj is None:  # Remove category itself and children.
             category.delete()
@@ -277,7 +320,7 @@ class CategoryRequestHandler(object):
 
         target_category = None
         for category_title in titles:
-            exists = SITECATS_CACHE.find_category(category_list.alias, category_title)
+            exists = get_cache().find_category(category_list.alias, category_title)
 
             if exists and category_list.obj is None:  # Already exists.
                 return exists
@@ -288,7 +331,7 @@ class CategoryRequestHandler(object):
                 raise SitecatsNewCategoryException(error_msg)
 
             max_num = category_list.editor.max_num
-            child_ids = SITECATS_CACHE.get_child_ids(category_list.alias)
+            child_ids = get_cache().get_child_ids(category_list.alias)
             if not exists:  # Add new category.
                 if category_list.obj is None:
                     check_max_num(len(child_ids), max_num, category_title)

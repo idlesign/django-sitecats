@@ -1,4 +1,3 @@
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
@@ -76,16 +75,6 @@ class CategoryBase(models.Model):
         obj = cls(title=title, creator=creator, parent=parent)
         obj.save()
         return obj
-
-    def get_absolute_url(self, target_object=None):
-        """Returns an URL fo this category querying `get_category_absolute_url` method the target object.
-
-        :param target_object:
-        :return: str
-        """
-        if target_object is not None and hasattr(target_object, 'get_category_absolute_url'):
-            return target_object.get_category_absolute_url(self)
-        return reverse('sitecats-listing', args=[str(self.id)])  # TODO think over
 
     def delete(self, *args, **kwargs):
         """Overridden to handle `is_locked`.
@@ -190,23 +179,15 @@ class ModelWithCategory(models.Model):
         :rtype: list|CategoryRequestHandler
         :return:
         """
-        from .toolbox import CategoryList, SITECATS_CACHE
+        from .toolbox import get_category_lists
         init_kwargs = init_kwargs or {}
-        additional_parents_aliases = additional_parents_aliases or []
 
         catlist_kwargs = {}
         if self._category_lists_init_kwargs is not None:
             catlist_kwargs.update(self._category_lists_init_kwargs)
         catlist_kwargs.update(init_kwargs)
 
-        ctype = ContentType.objects.get_for_model(self)
-        cat_ids = [item[0] for item in self.categories.model.objects.filter(content_type=ctype, object_id=self.id).values_list('category_id').all()]
-        parent_aliases = SITECATS_CACHE.get_parents_for(cat_ids).union(additional_parents_aliases)
-        lists = []
-        for parent_alias in SITECATS_CACHE.sort_aliases(parent_aliases):
-            catlist = CategoryList(parent_alias, **catlist_kwargs)  # TODO Burned in class name. Make more customizable.
-            catlist.set_obj(self)
-            lists.append(catlist)
+        lists = get_category_lists(catlist_kwargs, additional_parents_aliases, obj=self)
 
         if self._category_editor is not None:  # Return editor lists instead of plain lists if it's enabled.
             return self._category_editor.get_lists()

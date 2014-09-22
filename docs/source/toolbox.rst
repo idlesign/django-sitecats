@@ -37,6 +37,12 @@ ModelWithCategory
 
 
 
+get_category_lists
+------------------
+
+.. autofunction:: sitecats.toolbox.get_category_lists
+
+
 get_category_aliases_under
 --------------------------
 
@@ -57,6 +63,4 @@ CategoryRequestHandler
 
 .. autoclass:: sitecats.toolbox.CategoryRequestHandler
     :members:
-
-
 

@@ -12,13 +12,13 @@ register = template.Library()
 def sitecats_url(parser, token):
     tokens = token.split_contents()
     as_clause = detect_clause(parser, 'as', tokens)
-    target_obj = detect_clause(parser, 'using', tokens)
+    target_list = detect_clause(parser, 'using', tokens)
     category = detect_clause(parser, 'for', tokens)
 
     tokens_num = len(tokens)
 
     if tokens_num in (1, 3):
-        return sitecats_urlNode(category, target_obj, as_clause)
+        return sitecats_urlNode(category, target_list, as_clause)
     else:
         raise template.TemplateSyntaxError('`sitecats_url` tag expects the following notation: {% sitecats_url for my_category as "someurl" %}.')
 
@@ -39,18 +39,18 @@ def sitecats_categories(parser, token):
 
 class sitecats_urlNode(template.Node):
 
-    def __init__(self, category, target_obj, as_var):
+    def __init__(self, category, target_list, as_var):
         self.as_var = as_var
-        self.target_obj = target_obj
+        self.target_list = target_list
         self.category = category
 
     def render(self, context):
         resolve = lambda arg: arg.resolve(context) if isinstance(arg, template.FilterExpression) else arg
 
         category = resolve(self.category)
-        target_obj = resolve(self.target_obj)
+        target_obj = resolve(self.target_list)
 
-        url = category.get_absolute_url(target_obj)
+        url = target_obj.get_category_url(category)
 
         if not self.as_var:
             return url

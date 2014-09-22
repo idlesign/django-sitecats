@@ -1,21 +1,43 @@
 from collections import OrderedDict
 
-from etc.toolbox import get_model_class_from_settings
+from etc.toolbox import get_model_class_from_string
+from django import VERSION
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db.models import signals, Count, Model
 
-from sitecats import settings
+from .settings import MODEL_CATEGORY, MODEL_TIE
 
 
 def get_category_model():
     """Returns the Category model, set for the project."""
-    return get_model_class_from_settings(settings, 'MODEL_CATEGORY')
+    return get_model_class_from_string(MODEL_CATEGORY)
 
 
 def get_tie_model():
     """Returns the Tie model, set for the project."""
-    return get_model_class_from_settings(settings, 'MODEL_TIE')
+    return get_model_class_from_string(MODEL_TIE)
+
+
+_SITECATS_CACHE = None
+
+
+def get_cache():
+    """Returns global cache object.
+
+    :rtype: Cache
+    :return: cache object
+    """
+    global _SITECATS_CACHE
+
+    if _SITECATS_CACHE is None:
+        if VERSION < (1, 7, 0):
+            _SITECATS_CACHE = Cache()  # Caching object.
+        else:
+            from django.apps import apps
+            _SITECATS_CACHE = apps.get_app_config('sitecats').get_categories_cache()
+
+    return _SITECATS_CACHE
 
 
 class Cache(object):
