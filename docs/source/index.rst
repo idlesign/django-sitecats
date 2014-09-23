@@ -36,6 +36,7 @@ Table of Contents
 
     quickstart
     toolbox
+    examples
 
 
 
