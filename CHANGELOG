@@ -5,7 +5,7 @@ django-sitecats changelog
 v0.3.0
 ------
 + Implemented `toolbox.get_category_lists()`.
-+ DB hits number decreased.
+* DB hits number decreased.
 * Fixed number of ties calculation for items.
 * Slight API changes.
 
