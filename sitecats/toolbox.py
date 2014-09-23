@@ -200,15 +200,18 @@ class CategoryList(object):
         """
         return self.get_category_attr('note', '')
 
-    def get_categories(self):
+    def get_categories(self, tied_only=None):
         """Returns a list of actual subcategories.
 
+        :param bool tied_only: Flag to get only categories with ties. Ties stats are stored in `ties_num` attrs.
         :rtype: list
         :return: a list of actual subcategories
         """
         if self._cache_get_categories is not None:
             return self._cache_get_categories
-        return get_cache().get_categories(self.alias, self.obj)
+        if tied_only is None:
+            tied_only = self.obj is not None
+        return get_cache().get_categories(self.alias, self.obj, tied_only=tied_only)
 
     def get_choices(self):
         """Returns available subcategories choices list.

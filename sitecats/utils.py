@@ -211,17 +211,19 @@ class Cache(object):
 
         return {item['category_id']: item['ties_num'] for item in get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category'))}
 
-    def get_categories(self, parent_aliases=None, target_object=None, with_ties_only=True):
+    def get_categories(self, parent_aliases=None, target_object=None, tied_only=True):
         """Returns subcategories (or ties if `target_object` is set)
         for the given parent category.
 
         :param str|None|list parent_aliases:
         :param ModelWithCategory|Model target_object:
-        :param bool with_ties_only: Flag to get only categories with ties. Ties stats are stored in `ties_num` attrs.
+        :param bool tied_only: Flag to get only categories with ties. Ties stats are stored in `ties_num` attrs.
         :return: a list of category objects or tie objects extended with information from their categories.
         """
 
+        single_mode = False
         if not isinstance(parent_aliases, list):
+            single_mode = parent_aliases
             parent_aliases = [parent_aliases]
 
         all_chlidren = []
@@ -229,11 +231,11 @@ class Cache(object):
         for parent_alias in parent_aliases:
             child_ids = self.get_child_ids(parent_alias)
             parents_to_children[parent_alias] = child_ids
-            if with_ties_only:
+            if tied_only:
                 all_chlidren.extend(child_ids)
 
         ties = {}
-        if with_ties_only:
+        if tied_only:
             source = OrderedDict()
             ties = self.get_ties_stats(all_chlidren, target_object)
             for parent_alias, child_ids in parents_to_children.items():
@@ -248,11 +250,15 @@ class Cache(object):
         for parent_alias, child_ids in source.items():
             for cat_id in child_ids:
                 cat = self.get_category_by_id(cat_id)
-                if with_ties_only:
+                if tied_only:
                     cat.ties_num = ties.get(cat_id, 0)
 
                 if parent_alias not in categories:
                     categories[parent_alias] = []
 
                 categories[parent_alias].append(cat)
+
+        if single_mode != False:  # sic!
+            return categories[single_mode]
+
         return categories
