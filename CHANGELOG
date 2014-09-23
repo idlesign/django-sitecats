@@ -1,6 +1,10 @@
 django-sitecats changelog
 =========================
 
+v0.3.1
+------
+* Fixed TypeError exception when get_category_lists() is used.
+
 
 v0.3.0
 ------
