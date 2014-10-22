@@ -4,7 +4,7 @@ Usage examples
 
 Let's suppose we have a simple two-level categories hierarchy::
 
-      |-- Laguage (alias: langs)
+      |-- Language (alias: langs)
       |   |-- Russian
       |   |-- English
       |
