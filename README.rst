@@ -60,8 +60,11 @@ Template coding basically boils down to ``sitecats_categories`` template tags us
     {% load sitecats %}
 
     {% block contents %}
+        <!-- Some additional functionality (e.g. categories cloud rendering) will require JS. -->
+        <script src="{{ STATIC_URL }}js/sitecats/sitecats.min.js"></script>
+
         <h1>{{ article.title }}</h1>
-        <div class="article_categories">
+        <div id="article_categories">
             {% sitecats_categories from article %} <!-- And that's it. -->
         </div>
         <!-- Form code goes somewhere here. -->

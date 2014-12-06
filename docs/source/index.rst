@@ -24,7 +24,7 @@ Requirements
 4. Django Admin contrib enabled (optional)
 5. django-admirarchy for Django Admin contrib (optional)
 6. Django Messages contrib enabled (optional)
-7. South (for DB migrations with Django < 1.7)
+7. jQuery (for client side additional functionality; optional)
 
 
 
@@ -37,6 +37,7 @@ Table of Contents
     quickstart
     toolbox
     examples
+    clientside
 
 
 
