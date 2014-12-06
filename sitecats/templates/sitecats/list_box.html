@@ -12,7 +12,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="category_action" value="add">
                     <input type="hidden" name="category_base_id" value="{{ list.get_id }}">
-                    <input type="text" name="category_title" required value="" placeholder="{% trans "Category name" %}">
+                    <input type="text" name="category_title" data-catsep="{{ list.editor.category_separator }}" required value="" placeholder="{% trans "Category name" %}">
 
                     {% if list.editor.render_button %}<input type="submit" value="{% trans "Add" %}">{% endif %}
                 </form>

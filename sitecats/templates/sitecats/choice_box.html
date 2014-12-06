@@ -1,5 +1,5 @@
 <ul class="choices">
 {% for choice in choices %}
-    <li><span class="choice" title="{{ choice.note }}">{{ choice.title }}</span></li>
+    <li><span data-catid="{{ choice.id }}" class="choice" title="{{ choice.note }}">{{ choice.title }}</span></li>
 {% endfor %}
 </ul>
