@@ -9,6 +9,7 @@ recursive-include docs .rst
 recursive-include docs .py
 
 recursive-include sitecats/locale *
+recursive-include sitecats/static *
 recursive-include sitecats/templates .html
 recursive-include sitecats/templatetags .py
 

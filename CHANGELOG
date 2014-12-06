@@ -1,6 +1,12 @@
 django-sitecats changelog
 =========================
 
+v0.4.0
+------
++ Implemented categories cloud rendering JS.
++ Implemented editor enhancements JS.
+
+
 v0.3.1
 ------
 * Fixed TypeError exception when get_category_lists() is used.
