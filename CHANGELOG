@@ -1,6 +1,11 @@
 django-sitecats changelog
 =========================
 
+Unreleased
+----------
++ Added Spanish loco.
+
+
 v0.4.0
 ------
 + Implemented categories cloud rendering JS.
