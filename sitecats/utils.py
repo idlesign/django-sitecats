@@ -4,7 +4,7 @@ from etc.toolbox import get_model_class_from_string
 from django import VERSION
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db.models import signals, Count, Model
+from django.db.models import signals, Count
 
 from .settings import MODEL_CATEGORY, MODEL_TIE
 
@@ -207,9 +207,14 @@ class Cache(object):
             else:
                 concrete = True
                 filter_kwargs['object_id'] = target_model.id
-            filter_kwargs['content_type'] = ContentType.objects.get_for_model(target_model, for_concrete_model=concrete)
+            filter_kwargs['content_type'] = ContentType.objects.get_for_model(
+                target_model, for_concrete_model=concrete
+            )
 
-        return {item['category_id']: item['ties_num'] for item in get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category'))}
+        return {
+            item['category_id']: item['ties_num'] for item in
+            get_tie_model().objects.filter(**filter_kwargs).values('category_id').annotate(ties_num=Count('category'))
+        }
 
     def get_categories(self, parent_aliases=None, target_object=None, tied_only=True):
         """Returns subcategories (or ties if `target_object` is set)

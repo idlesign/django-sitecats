@@ -1,7 +1,6 @@
 strictness: medium
 uses:
     - django
-    - django-etc
 autodetect: yes
 ignore-paths:
     - docs
