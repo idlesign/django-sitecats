@@ -9,6 +9,15 @@ https://github.com/idlesign/django-sitecats
 .. image:: https://pypip.in/d/django-sitecats/badge.png
         :target: https://crate.io/packages/django-sitecats
 
+.. image:: https://coveralls.io/repos/idlesign/django-sitecats/badge.png
+    :target: https://coveralls.io/r/idlesign/django-sitecats
+
+.. image:: https://travis-ci.org/idlesign/django-sitecats.svg?branch=master
+    :target: https://travis-ci.org/idlesign/django-sitecats
+
+.. image:: https://landscape.io/github/idlesign/django-sitecats/master/landscape.svg?style=plastic
+   :target: https://landscape.io/github/idlesign/django-sitecats/master
+
 
 Description
 -----------
