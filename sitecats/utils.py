@@ -163,15 +163,15 @@ class Cache(object):
         self._cache_init()
         return self._cache_get_entry(self.CACHE_NAME_ALIASES, alias, None)
 
-    def get_category_by_id(self, id):
+    def get_category_by_id(self, cid):
         """Returns Category object by its id.
 
-        :param str alias:
+        :param str cid:
         :rtype: Category
         :return: category object
         """
         self._cache_init()
-        return self._cache_get_entry(self.CACHE_NAME_IDS, id)
+        return self._cache_get_entry(self.CACHE_NAME_IDS, cid)
 
     def find_category(self, parent_alias, title):
         """Searches parent category children for the given title (case independent).

@@ -15,7 +15,10 @@ class SitecatsSecurityException(SitecatsException, SuspiciousOperation):
 
 
 class SitecatsNewCategoryException(SitecatsSecurityException):
-    """Exception raised by CategoryRequestHandler when a try to add a subcategory into a restricted category is detected."""
+    """Exception raised by CategoryRequestHandler when a try to add a subcategory into a restricted
+    category is detected.
+
+    """
 
 
 class SitecatsLockedCategoryDelete(SitecatsException):

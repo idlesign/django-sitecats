@@ -41,7 +41,10 @@ def get_category_lists(init_kwargs=None, additional_parents_aliases=None, obj=No
     parent_aliases = additional_parents_aliases
     if obj is not None:
         ctype = ContentType.objects.get_for_model(obj)
-        cat_ids = [item[0] for item in get_tie_model().objects.filter(content_type=ctype, object_id=obj.id).values_list('category_id').all()]
+        cat_ids = [
+            item[0] for item in
+            get_tie_model().objects.filter(content_type=ctype, object_id=obj.id).values_list('category_id').all()
+        ]
         parent_aliases = list(get_cache().get_parents_for(cat_ids).union(additional_parents_aliases))
     lists = []
 
@@ -146,11 +149,14 @@ class CategoryList(object):
         :param bool allow_add: Flag to allow adding object-to-categories ties
         :param bool allow_remove: Flag to allow remove of object-to-categories ties or categories themselves
         :param bool allow_new: Flag to allow new categories creation
-        :param None|int min_num: Child items minimum for this list (object-to-categories ties or categories themselves)
-        :param None|int max_num: Child items maximum for this list (object-to-categories ties or categories themselves)
+        :param None|int min_num: Child items minimum for this list
+            (object-to-categories ties or categories themselves)
+        :param None|int max_num: Child items maximum for this list
+            (object-to-categories ties or categories themselves)
         :param bool render_button: Flag to allow buttons rendering for forms of this list
         :param str|None category_separator: String to consider it a category separator.
-        :param bool show_category_choices: Flag to render a choice list of available subcategories for each CategoryList
+        :param bool show_category_choices: Flag to render a choice list of available subcategories
+            for each CategoryList
         """
         # DRY: translate method args into namedtuple args.
         args, n, n, n = getargspec(self.enable_editor)
@@ -251,7 +257,10 @@ class CategoryRequestHandler(object):
             if isinstance(lst, string_types):  # Spawn CategoryList object from base category alias.
                 lst = self.list_cls(lst, **lists_init_kwargs)
             elif not isinstance(lst, CategoryList):
-                raise SitecatsConfigurationError('`CategoryRequestHandler.register_lists()` accepts only `CategoryList` objects or category aliases.')
+                raise SitecatsConfigurationError(
+                    '`CategoryRequestHandler.register_lists()` accepts only '
+                    '`CategoryList` objects or category aliases.'
+                )
 
             if self._obj:
                 lst.set_obj(self._obj)
@@ -275,11 +284,13 @@ class CategoryRequestHandler(object):
         :return: True on success otherwise and exception from SitecatsException family is raised.
         """
         if not category_list.editor.allow_remove:
-            raise SitecatsSecurityException('`action_remove()` is not supported by parent `%s`category.' % category_list.alias)
+            raise SitecatsSecurityException(
+                '`action_remove()` is not supported by parent `%s`category.' % category_list.alias)
 
         category_id = int(request.POST.get('category_id', 0))
         if not category_id:
-            raise SitecatsSecurityException('Unsupported `category_id` value - `%s` - is passed to `action_remove()`.' % category_id)
+            raise SitecatsSecurityException(
+                'Unsupported `category_id` value - `%s` - is passed to `action_remove()`.' % category_id)
 
         category = get_cache().get_category_by_id(category_id)
         if not category:
@@ -291,15 +302,25 @@ class CategoryRequestHandler(object):
             raise SitecatsSecurityException('`action_remove()` is not supported by `%s` category.' % cat_ident)
 
         if category.parent_id != category_list.get_id():
-            raise SitecatsSecurityException('`action_remove()` is unable to remove `%s`: not a child of parent `%s` category.' % (cat_ident, category_list.alias))
+            raise SitecatsSecurityException(
+                '`action_remove()` is unable to remove `%s`: '
+                'not a child of parent `%s` category.' % (cat_ident, category_list.alias)
+            )
 
         min_num = category_list.editor.min_num
 
         def check_min_num(num):
             if min_num is not None and num-1 < min_num:
                 subcats_str = ungettext_lazy('subcategory', 'subcategories', min_num)
-                error_msg = _('Unable to remove "%(target_category)s" category from "%(parent_category)s": parent category requires at least %(num)s %(subcats_str)s.') % {
-                    'target_category': category.title, 'parent_category': category_list.get_title(), 'num': min_num, 'subcats_str': subcats_str}
+                error_msg = _(
+                    'Unable to remove "%(target_category)s" category from "%(parent_category)s": '
+                    'parent category requires at least %(num)s %(subcats_str)s.'
+                ) % {
+                    'target_category': category.title,
+                    'parent_category': category_list.get_title(),
+                    'num': min_num,
+                    'subcats_str': subcats_str
+                }
                 raise SitecatsValidationError(error_msg)
 
         child_ids = get_cache().get_child_ids(category_list.alias)
@@ -329,18 +350,28 @@ class CategoryRequestHandler(object):
 
         titles = request.POST.get('category_title', '').strip()
         if not titles:
-            raise SitecatsSecurityException('Unsupported `category_title` value - `%s` - is passed to `action_add()`.' % titles)
+            raise SitecatsSecurityException(
+                'Unsupported `category_title` value - `%s` - is passed to `action_add()`.' % titles)
 
         if category_list.editor.category_separator is None:
             titles = [titles]
         else:
-            titles = [title.strip() for title in titles.split(category_list.editor.category_separator) if title.strip()]
+            titles = [
+                title.strip() for title in titles.split(category_list.editor.category_separator) if title.strip()
+            ]
 
         def check_max_num(num, max_num, category_title):
             if max_num is not None and num+1 > max_num:
                 subcats_str = ungettext_lazy('subcategory', 'subcategories', max_num)
-                error_msg = _('Unable to add "%(target_category)s" category into "%(parent_category)s": parent category can have at most %(num)s %(subcats_str)s.') % {
-                    'target_category': category_title, 'parent_category': category_list.get_title(), 'num': max_num, 'subcats_str': subcats_str}
+                error_msg = _(
+                    'Unable to add "%(target_category)s" category into "%(parent_category)s": '
+                    'parent category can have at most %(num)s %(subcats_str)s.'
+                ) % {
+                    'target_category': category_title,
+                    'parent_category': category_list.get_title(),
+                    'num': max_num,
+                    'subcats_str': subcats_str
+                }
                 raise SitecatsValidationError(error_msg)
 
         target_category = None
@@ -351,8 +382,13 @@ class CategoryRequestHandler(object):
                 return exists
 
             if not exists and not category_list.editor.allow_new:
-                error_msg = _('Unable to create a new "%(new_category)s" category inside of "%(parent_category)s": parent category does not support this action.') % {
-                    'new_category': category_title, 'parent_category': category_list.get_title()}
+                error_msg = _(
+                    'Unable to create a new "%(new_category)s" category inside of "%(parent_category)s": '
+                    'parent category does not support this action.'
+                ) % {
+                    'new_category': category_title,
+                    'parent_category': category_list.get_title()
+                }
                 raise SitecatsNewCategoryException(error_msg)
 
             max_num = category_list.editor.max_num
@@ -361,7 +397,9 @@ class CategoryRequestHandler(object):
                 if category_list.obj is None:
                     check_max_num(len(child_ids), max_num, category_title)
                 # TODO status
-                target_category = get_category_model().add(category_title, request.user, parent=category_list.get_category_model())
+                target_category = get_category_model().add(
+                    category_title, request.user, parent=category_list.get_category_model()
+                )
             else:
                 target_category = exists  # Use existing one for a tie.
 

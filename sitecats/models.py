@@ -41,11 +41,19 @@ class CategoryBase(models.Model):
     to customize model fields and behaviour.
 
     """
-    title = models.CharField(_('Title'), max_length=250, help_text=_('Category name.'))
-    alias = CharFieldNullable(_('Alias'), max_length=80, help_text=_('Short name to address category from application code.'), blank=True, null=True, unique=True)
-    is_locked = models.BooleanField(_('Locked'), help_text=_('Categories addressed from application code are locked, their aliases can not be changed. Such categories can be deleted from application code only.'), default=False)
+    title = models.CharField(
+        _('Title'), max_length=250, help_text=_('Category name.'))
+    alias = CharFieldNullable(
+        _('Alias'), max_length=80,
+        help_text=_('Short name to address category from application code.'), blank=True, null=True, unique=True)
+    is_locked = models.BooleanField(
+        _('Locked'),
+        help_text=_('Categories addressed from application code are locked, their aliases can not be changed. '
+                    'Such categories can be deleted from application code only.'), default=False)
 
-    parent = models.ForeignKey('self', related_name='%(class)s_parents', verbose_name=_('Parent'), help_text=_('Parent category.'), db_index=True, null=True, blank=True)
+    parent = models.ForeignKey(
+        'self', related_name='%(class)s_parents', verbose_name=_('Parent'),
+        help_text=_('Parent category.'), db_index=True, null=True, blank=True)
     note = models.TextField(_('Note'), blank=True)
 
     status = models.IntegerField(_('Status'), null=True, blank=True, db_index=True)
@@ -55,9 +63,11 @@ class CategoryBase(models.Model):
     time_created = models.DateTimeField(_('Date created'), auto_now_add=True)
     time_modified = models.DateTimeField(_('Date modified'), editable=False, auto_now=True)
 
-    sort_order = models.PositiveIntegerField(_('Sort order'), help_text=_('Item position among other categories under the same parent.'), db_index=True, default=0)
+    sort_order = models.PositiveIntegerField(
+        _('Sort order'),
+        help_text=_('Item position among other categories under the same parent.'), db_index=True, default=0)
 
-    class Meta:
+    class Meta(object):
         abstract = True
         verbose_name = _('Category')
         verbose_name_plural = _('Categories')
@@ -126,11 +136,12 @@ class TieBase(models.Model):
 
     # Here follows a link to an object.
     object_id = models.PositiveIntegerField(verbose_name=_('Object ID'), db_index=True)
-    content_type = models.ForeignKey(ContentType, verbose_name=_('Content type'), related_name='%(app_label)s_%(class)s_tags')
+    content_type = models.ForeignKey(
+        ContentType, verbose_name=_('Content type'), related_name='%(app_label)s_%(class)s_tags')
 
     linked_object = generic.GenericForeignKey()
 
-    class Meta:
+    class Meta(object):
         abstract = True
         verbose_name = _('Tie')
         verbose_name_plural = _('Ties')
@@ -155,7 +166,7 @@ class ModelWithCategory(models.Model):
     """
     categories = generic.GenericRelation(MODEL_TIE)
 
-    class Meta:
+    class Meta(object):
         abstract = True
 
     _category_lists_init_kwargs = None
@@ -200,8 +211,10 @@ class ModelWithCategory(models.Model):
         """Enables editor functionality for categories of this object.
 
         :param Request request: Django request object
-        :param dict|None editor_init_kwargs: Keyword args to initialize category lists editor with. See CategoryList.enable_editor()
-        :param list|None additional_parents_aliases: Aliases of categories for editor to render even if this object has no tie to them.
+        :param dict|None editor_init_kwargs: Keyword args to initialize category lists editor with.
+            See CategoryList.enable_editor()
+        :param list|None additional_parents_aliases: Aliases of categories for editor to render
+            even if this object has no tie to them.
         :param dict|None lists_init_kwargs: Keyword args to initialize CategoryList objects with
         :param dict|None handler_init_kwargs: Keyword args to initialize CategoryRequestHandler object with
         :return:
@@ -211,7 +224,8 @@ class ModelWithCategory(models.Model):
         lists_init_kwargs = lists_init_kwargs or {}
         editor_init_kwargs = editor_init_kwargs or {}
         handler = CategoryRequestHandler(request, self, **handler_init_kwargs)
-        lists = self.get_category_lists(init_kwargs=lists_init_kwargs, additional_parents_aliases=additional_parents_aliases)
+        lists = self.get_category_lists(
+            init_kwargs=lists_init_kwargs, additional_parents_aliases=additional_parents_aliases)
         handler.register_lists(lists, lists_init_kwargs=lists_init_kwargs, editor_init_kwargs=editor_init_kwargs)
         self._category_editor = handler  # Set link to handler to mutate get_category_lists() behaviour.
         return handler.listen()

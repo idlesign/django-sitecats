@@ -20,7 +20,8 @@ def sitecats_url(parser, token):
     if tokens_num in (1, 3):
         return sitecats_urlNode(category, target_list, as_clause)
     else:
-        raise template.TemplateSyntaxError('`sitecats_url` tag expects the following notation: {% sitecats_url for my_category as "someurl" %}.')
+        raise template.TemplateSyntaxError(
+            '`sitecats_url` tag expects the following notation: {% sitecats_url for my_category as "someurl" %}.')
 
 
 @register.tag
@@ -34,7 +35,9 @@ def sitecats_categories(parser, token):
     if tokens_num in (1, 3):
         return sitecats_categoriesNode(target_obj, use_template)
     else:
-        raise template.TemplateSyntaxError('`sitecats_categories` tag expects the following notation: {% sitecats_categories from my_categories_list template "sitecats/my_categories.html" %}.')
+        raise template.TemplateSyntaxError(
+            '`sitecats_categories` tag expects the following notation: '
+            '{% sitecats_categories from my_categories_list template "sitecats/my_categories.html" %}.')
 
 
 class sitecats_urlNode(template.Node):
@@ -83,12 +86,15 @@ class sitecats_categoriesNode(template.Node):
                 target_obj = (target_obj,)
             else:
                 if settings.DEBUG:
-                    raise SitecatsConfigurationError('`sitecats_categories` template tag can\'t accept `%s` type from `%s` template variable.' % (type(target_obj), self.target_obj))
+                    raise SitecatsConfigurationError(
+                        '`sitecats_categories` template tag can\'t accept `%s` type '
+                        'from `%s` template variable.' % (type(target_obj), self.target_obj))
                 return ''  # Silent fall.
 
         context.push()
         context['sitecats_categories'] = target_obj
-        contents = template.loader.get_template(resolve(self.use_template or 'sitecats/categories.html')).render(context)
+        template_path = resolve(self.use_template) or 'sitecats/categories.html'
+        contents = template.loader.get_template(template_path).render(context)
         context.pop()
 
         return contents
