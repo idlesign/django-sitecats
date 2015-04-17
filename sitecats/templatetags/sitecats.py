@@ -1,9 +1,12 @@
 from django import template
 from django.conf import settings
+from django.template.loader import get_template
+from django.template.base import FilterExpression
 
 from ..models import ModelWithCategory
 from ..toolbox import CategoryRequestHandler, CategoryList
 from ..exceptions import SitecatsConfigurationError
+
 
 register = template.Library()
 
@@ -48,7 +51,7 @@ class sitecats_urlNode(template.Node):
         self.category = category
 
     def render(self, context):
-        resolve = lambda arg: arg.resolve(context) if isinstance(arg, template.FilterExpression) else arg
+        resolve = lambda arg: arg.resolve(context) if isinstance(arg, FilterExpression) else arg
 
         category = resolve(self.category)
         target_obj = resolve(self.target_list)
@@ -72,7 +75,7 @@ class sitecats_categoriesNode(template.Node):
         self.target_obj = target_obj
 
     def render(self, context):
-        resolve = lambda arg: arg.resolve(context) if isinstance(arg, template.FilterExpression) else arg
+        resolve = lambda arg: arg.resolve(context) if isinstance(arg, FilterExpression) else arg
 
         target_obj = resolve(self.target_obj)
         if isinstance(target_obj, CategoryRequestHandler):
@@ -94,7 +97,7 @@ class sitecats_categoriesNode(template.Node):
         context.push()
         context['sitecats_categories'] = target_obj
         template_path = resolve(self.use_template) or 'sitecats/categories.html'
-        contents = template.loader.get_template(template_path).render(context)
+        contents = get_template(template_path).render(context)
         context.pop()
 
         return contents
