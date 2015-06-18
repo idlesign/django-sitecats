@@ -223,6 +223,7 @@ class ModelWithCategory(models.Model):
         additional_parents_aliases = additional_parents_aliases or []
         lists_init_kwargs = lists_init_kwargs or {}
         editor_init_kwargs = editor_init_kwargs or {}
+        handler_init_kwargs = handler_init_kwargs or {}
         handler = CategoryRequestHandler(request, self, **handler_init_kwargs)
         lists = self.get_category_lists(
             init_kwargs=lists_init_kwargs, additional_parents_aliases=additional_parents_aliases)
