@@ -5,11 +5,17 @@ Quickstart
 
     Add the **sitecats** application to INSTALLED_APPS in your settings file (usually 'settings.py').
 
-Let's allow a categorization for ``Article`` model.
+Let's allow categorization for ``Article`` model.
 
-First, inherit that model from **sitecats.models.ModelWithCategory**.
+1. First, inherit that model from **sitecats.models.ModelWithCategory**.
 
-Now to our views:
+2. Then we need to add at least one root category, to show up in our categories editor.
+
+   Let's create two root categories with `language` and `os` aliases. This could be done either programmatically
+   (instantiate `Category` model) or with Django Admin Contrib (install `django-admirarchy<https://github.com/idlesign/django-admirarchy>`_
+   to simplify navigation).
+
+3. Now to our views:
 
 .. code-block:: python
 
@@ -27,8 +33,11 @@ Now to our views:
 
         # Let's configure our category lists a little bit:
         # * show titles of parent categories,
-        # * apply Twitter Boostrap 3 css classes to categories.
-        article.set_category_lists_init_kwargs({'show_title': True, 'cat_html_class': 'label label-default'})
+        # * apply Twitter Bootstrap 3 css classes to categories.
+        article.set_category_lists_init_kwargs({
+            'show_title': True,
+            'cat_html_class': 'label label-default'
+        })
 
         return self.render(request, 'article.html', {'article': article})
 
@@ -37,12 +46,16 @@ Now to our views:
         article = get_object_or_404(Article, pk=article_id)
 
         # Now we enable category editor for an article, and allow users
-        # not only to link that article to subcategories of `language`, and `os` categories,
-        # but also to add those subcategories.
-        article.enable_category_lists_editor(request,
-                                editor_init_kwargs={'allow_new': True},
-                                lists_init_kwargs={'show_title': True, 'cat_html_class': 'label label-default'},
-                                additional_parents_aliases=['language', 'os'])
+        # to add subcategories of `language`, and `os` categories and link articles to them.
+        article.enable_category_lists_editor(
+            request,
+            editor_init_kwargs={'allow_new': True},
+            lists_init_kwargs={
+                'show_title': True,
+                'cat_html_class': 'label label-default'
+            },
+            additional_parents_aliases=['language', 'os']
+        )
 
         form = ... # Your usual Article edit handling code will be here.
 
@@ -50,7 +63,7 @@ Now to our views:
 
 
 
-Template coding basically boils down to ``sitecats_categories`` template tags usage:
+4. Template coding basically boils down to ``sitecats_categories`` template tags usage:
 
 .. code-block:: html
 
@@ -72,6 +85,8 @@ Template coding basically boils down to ``sitecats_categories`` template tags us
         <!-- Form code goes somewhere here. -->
     {% endblock %}
 
+
+Add some categories.
 
 That's roughly what we could have on details page:
 
