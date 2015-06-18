@@ -49,11 +49,14 @@ This application is just about structuring your data: build categories hierarchy
         article = get_object_or_404(Article, pk=article_id)
 
         # Now we enable category editor for an article, and allow users
-        # not only to link that article to subcategories of `language`, and `os` categories,
-        # but also to add those subcategories.
-        article.enable_category_lists_editor(request,
-                                editor_init_kwargs={'allow_new': True},
-                                additional_parents_aliases=['language', 'os'])
+        # to add subcategories to `language`, and `os` categories
+        # (suppose we created them beforehand with Admin contrib),
+        # and link this article to them.
+        article.enable_category_lists_editor(
+            request,
+            editor_init_kwargs={'allow_new': True},
+            additional_parents_aliases=['language', 'os']
+        )
 
         form = ... # Your usual Article edit handling code will be here.
 
