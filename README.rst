@@ -2,21 +2,23 @@ django-sitecats
 ===============
 https://github.com/idlesign/django-sitecats
 
+.. image:: https://img.shields.io/pypi/v/django-sitecats.svg
+    :target: https://pypi.python.org/pypi/django-sitecats
 
-.. image:: https://badge.fury.io/py/django-sitecats.png
-    :target: http://badge.fury.io/py/django-sitecats
+.. image:: https://img.shields.io/pypi/dm/django-sitecats.svg
+    :target: https://pypi.python.org/pypi/django-sitecats
 
-.. image:: https://pypip.in/d/django-sitecats/badge.png
-        :target: https://crate.io/packages/django-sitecats
+.. image:: https://img.shields.io/pypi/l/django-sitecats.svg
+    :target: https://pypi.python.org/pypi/django-sitecats
 
-.. image:: https://coveralls.io/repos/idlesign/django-sitecats/badge.png
+.. image:: https://img.shields.io/coveralls/idlesign/django-sitecats/master.svg
     :target: https://coveralls.io/r/idlesign/django-sitecats
 
-.. image:: https://travis-ci.org/idlesign/django-sitecats.svg?branch=master
+.. image:: https://img.shields.io/travis/idlesign/django-sitecats/master.svg
     :target: https://travis-ci.org/idlesign/django-sitecats
 
-.. image:: https://landscape.io/github/idlesign/django-sitecats/master/landscape.svg?style=plastic
-   :target: https://landscape.io/github/idlesign/django-sitecats/master
+.. image:: https://img.shields.io/codeclimate/github/idlesign/django-sitecats.svg
+   :target: https://codeclimate.com/github/idlesign/django-sitecats
 
 
 Description
