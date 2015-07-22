@@ -9,7 +9,8 @@ from django.contrib import messages
 
 from .settings import UNRESOLVED_URL_MARKER
 from .utils import get_category_model, get_tie_model, get_cache
-from .exceptions import SitecatsConfigurationError, SitecatsSecurityException, SitecatsNewCategoryException, SitecatsValidationError
+from .exceptions import SitecatsConfigurationError, SitecatsSecurityException, SitecatsNewCategoryException, \
+    SitecatsValidationError
 
 
 def get_category_aliases_under(parent_alias=None):
@@ -27,7 +28,7 @@ def get_category_aliases_under(parent_alias=None):
 
 def get_category_lists(init_kwargs=None, additional_parents_aliases=None, obj=None):
     """Returns a list of CategoryList objects, optionally associated with
-    this model instance.
+    a given model instance.
 
     :param dict|None init_kwargs:
     :param list|None additional_parents_aliases:

@@ -93,9 +93,17 @@ class Cache(object):
         self._cache = None
         cache.delete(self.CACHE_ENTRY_NAME)
 
-    def _cache_get_entry(self, entry_name, key=0, default=False):
-        """Returns cache entry parameter value by its name."""
-        if key == 0:
+    ENTIRE_ENTRY_KEY = object()
+
+    def _cache_get_entry(self, entry_name, key=ENTIRE_ENTRY_KEY, default=False):
+        """Returns cache entry parameter value by its name.
+
+        :param str entry_name:
+        :param str key:
+        :param type default:
+        :return:
+        """
+        if key is self.ENTIRE_ENTRY_KEY:
             return self._cache[entry_name]
         return self._cache[entry_name].get(key, default)
 
@@ -231,18 +239,18 @@ class Cache(object):
             single_mode = parent_aliases
             parent_aliases = [parent_aliases]
 
-        all_chlidren = []
+        all_children = []
         parents_to_children = OrderedDict()
         for parent_alias in parent_aliases:
             child_ids = self.get_child_ids(parent_alias)
             parents_to_children[parent_alias] = child_ids
             if tied_only:
-                all_chlidren.extend(child_ids)
+                all_children.extend(child_ids)
 
         ties = {}
         if tied_only:
             source = OrderedDict()
-            ties = self.get_ties_stats(all_chlidren, target_object)
+            ties = self.get_ties_stats(all_children, target_object)
             for parent_alias, child_ids in parents_to_children.items():
                 common = set(ties.keys()).intersection(child_ids)
                 if common:
