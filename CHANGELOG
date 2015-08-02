@@ -1,6 +1,11 @@
 django-sitecats changelog
 =========================
 
+Unreleased
+----------
++ Added TieBase.get_linked_objects().
+
+
 v0.5.0
 ------
 + Added Spanish loco.

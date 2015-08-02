@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
@@ -148,6 +149,52 @@ class TieBase(models.Model):
 
     def __str__(self):
         return '%s:%s tied to %s' % (self.content_type, self.object_id, self.category)
+
+    @classmethod
+    def get_linked_objects(cls, filter_kwargs=None, id_only=False, by_category=False):
+        """Returns objects linked to categories in a dictionary indexed by model classes.
+
+        :param dict filter_kwargs: Filter for ties.
+        :param bool id_only: If True only IDs of linked objects are returned, otherwise - QuerySets.
+        :param bool by_category: If True only linked objects and their models a grouped by categories.
+
+        :rtype: defaultdict
+        :return:
+        """
+        filter_kwargs = filter_kwargs or {}
+
+        if by_category:
+            results = defaultdict(lambda: defaultdict(list))
+        else:
+            results = defaultdict(list)
+
+        map_type_to_model = {}
+
+        rows = cls.objects.filter(**filter_kwargs).select_related(
+            'content_type', 'category').only('object_id', 'content_type', 'category')
+
+        for row in rows:
+            type_id = row.content_type.id
+            if type_id not in map_type_to_model:
+                map_type_to_model[type_id] = row.content_type.model_class()
+
+            model = map_type_to_model[type_id]
+            if by_category:
+                results[row.category][model].append(row.object_id)
+            else:
+                results[model].append(row.object_id)
+
+        if not id_only:
+            # Building up QuerySets.
+            if by_category:
+                for category, linked in results.items():
+                    for model, ids in linked.items():
+                        results[category][model] = model._base_manager.filter(pk__in=ids)
+            else:
+                for model, ids in results.items():
+                    results[model] = model._base_manager.filter(pk__in=ids)
+
+        return results
 
 
 class Category(CategoryBase):

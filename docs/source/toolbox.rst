@@ -28,6 +28,19 @@ get_tie_model
 .. autofunction:: sitecats.utils.get_tie_model
 
 
+Tie
+---
+
+Ties - are links between categories and various items of your site.
+
+You can get tie model with `get_tie_model`.
+
+Whether you need to know categories your site items are currently linked to alongside with ties themselves
+you can use `get_linked_objects` method.
+
+.. autoclass:: sitecats.models.Tie
+    :members:
+
 
 ModelWithCategory
 -----------------
