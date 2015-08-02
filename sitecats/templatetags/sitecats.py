@@ -14,17 +14,16 @@ register = template.Library()
 @register.tag
 def sitecats_url(parser, token):
     tokens = token.split_contents()
-    as_clause = detect_clause(parser, 'as', tokens)
+    as_clause = detect_clause(parser, 'as', tokens, as_filter_expr=False)
     target_list = detect_clause(parser, 'using', tokens)
     category = detect_clause(parser, 'for', tokens)
 
-    tokens_num = len(tokens)
-
-    if tokens_num in (1, 3):
-        return sitecats_urlNode(category, target_list, as_clause)
-    else:
+    if category is None or target_list is None:
         raise template.TemplateSyntaxError(
-            '`sitecats_url` tag expects the following notation: {% sitecats_url for my_category as "someurl" %}.')
+            '`sitecats_url` tag expects the following notation: '
+            '{% sitecats_url for my_category using my_categories_list as someurl %}.')
+
+    return sitecats_urlNode(category, target_list, as_clause)
 
 
 @register.tag
@@ -33,14 +32,12 @@ def sitecats_categories(parser, token):
     use_template = detect_clause(parser, 'template', tokens)
     target_obj = detect_clause(parser, 'from', tokens)
 
-    tokens_num = len(tokens)
-
-    if tokens_num in (1, 3):
-        return sitecats_categoriesNode(target_obj, use_template)
-    else:
+    if target_obj is None:
         raise template.TemplateSyntaxError(
             '`sitecats_categories` tag expects the following notation: '
             '{% sitecats_categories from my_categories_list template "sitecats/my_categories.html" %}.')
+
+    return sitecats_categoriesNode(target_obj, use_template)
 
 
 class sitecats_urlNode(template.Node):
@@ -61,11 +58,8 @@ class sitecats_urlNode(template.Node):
         if not self.as_var:
             return url
 
-        context.push()
         context[self.as_var] = url
-        context.pop()
-
-        return None
+        return ''
 
 
 class sitecats_categoriesNode(template.Node):
@@ -82,17 +76,16 @@ class sitecats_categoriesNode(template.Node):
             target_obj = target_obj.get_lists()
         elif isinstance(target_obj, ModelWithCategory):
             target_obj = target_obj.get_category_lists()
-        elif isinstance(target_obj, (list, tuple)):  # Simple list of CategotyList items.
+        elif isinstance(target_obj, (list, tuple)):  # Simple list of CategoryList items.
             pass
+        elif isinstance(target_obj, CategoryList):
+            target_obj = (target_obj,)
         else:
-            if isinstance(target_obj, CategoryList):
-                target_obj = (target_obj,)
-            else:
-                if settings.DEBUG:
-                    raise SitecatsConfigurationError(
-                        '`sitecats_categories` template tag can\'t accept `%s` type '
-                        'from `%s` template variable.' % (type(target_obj), self.target_obj))
-                return ''  # Silent fall.
+            if settings.DEBUG:
+                raise SitecatsConfigurationError(
+                    '`sitecats_categories` template tag can\'t accept `%s` type '
+                    'from `%s` template variable.' % (type(target_obj), self.target_obj))
+            return ''  # Silent fall.
 
         context.push()
         context['sitecats_categories'] = target_obj
@@ -103,14 +96,16 @@ class sitecats_categoriesNode(template.Node):
         return contents
 
 
-def detect_clause(parser, clause_name, tokens):
+def detect_clause(parser, clause_name, tokens, as_filter_expr=True):
     """Helper function detects a certain clause in tag tokens list.
     Returns its value.
 
     """
     if clause_name in tokens:
         t_index = tokens.index(clause_name)
-        clause_value = parser.compile_filter(tokens[t_index + 1])
+        clause_value = tokens[t_index + 1]
+        if as_filter_expr:
+            clause_value = parser.compile_filter(clause_value)
         del tokens[t_index:t_index + 2]
     else:
         clause_value = None
