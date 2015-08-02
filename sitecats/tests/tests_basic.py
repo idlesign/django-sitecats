@@ -1,6 +1,7 @@
 from uuid import uuid4
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
+from django.test.utils import override_settings
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.template.base import Template, TemplateSyntaxError
@@ -228,9 +229,6 @@ class TieTest(TestCase):
         self.assertEqual(len(linked[cat1]), 2)  # Article + Comment
         self.assertEqual(len(linked[cat2]), 1)
         self.assertEqual(len(linked[cat3]), 1)
-
-        a = 1
-
 
 
 class ModelWithCategoryTest(TestCase):
