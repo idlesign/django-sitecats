@@ -4,6 +4,7 @@ django-sitecats changelog
 Unreleased
 ----------
 + Added TieBase.get_linked_objects().
+* IMPORTANT: Added migrations. Use `migrate sitecats --fake` to make DB up-to-date.
 
 
 v0.5.0
