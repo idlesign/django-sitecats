@@ -1,14 +1,26 @@
 from uuid import uuid4
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
+from django.template.base import Template, TemplateSyntaxError
+from django.template.context import Context
 
 from sitecats.models import Category, Tie
-from sitecats.exceptions import SitecatsLockedCategoryDelete
-from sitecats.toolbox import CategoryList, CategoryRequestHandler, get_category_aliases_under
+from sitecats.exceptions import SitecatsLockedCategoryDelete, SitecatsConfigurationError
+from sitecats.toolbox import CategoryList, CategoryRequestHandler, get_category_aliases_under, get_tie_model, \
+    get_category_model
+from sitecats.settings import UNRESOLVED_URL_MARKER
 
-from models import Comment, Article
+from .models import Comment, Article
+
+
+MODEL_TIE = get_tie_model()
+MODEL_CATEGORY = get_category_model()
+
+
+def render_string(string, context=None):
+    return Template(string).render(Context(context))
 
 
 def create_comment():
@@ -37,6 +49,79 @@ def create_category(title=None, alias=None, parent=None, creator=None, **kwargs)
     cat = Category(title=title, alias=alias, parent=parent, creator=creator, **kwargs)
     cat.save()
     return cat
+
+
+class TemplateTagsTest(TestCase):
+
+    def setUp(self):
+        self.user = create_user()
+
+        self.cat1 = create_category(alias='cat1')
+        self.cl_cat1 = CategoryList('cat1')
+
+        self.cat2 = create_category(alias='cat2')
+        self.cl_cat2 = CategoryList('cat2', show_links=lambda category: category.id)
+
+        self.cat3 = create_category(alias='cat3')
+        self.cat31 = create_category(alias='cat31', parent=self.cat3)
+        self.cl_cat3 = CategoryList('cat3')
+
+        self.art1 = create_article()
+
+    def test_sitecats_url(self):
+        tpl = '{% load sitecats %}{% sitecats_url %}'
+        self.assertRaises(TemplateSyntaxError, render_string, tpl)
+
+        # testing UNRESOLVED_URL_MARKER
+        context = Context({'my_category': self.cat1, 'my_list': self.cl_cat1})
+        tpl = '{% load sitecats %}{% sitecats_url for my_category using my_list %}'
+        result = render_string(tpl, context)
+        self.assertEqual(result, UNRESOLVED_URL_MARKER)
+
+        # testing ModelWithCategory.get_category_absolute_url()
+        self.cl_cat1.set_obj(self.art1)
+        expected_url = '%s/%s' % (self.cat1.id, self.art1.title)
+        tpl = '{% load sitecats %}{% sitecats_url for my_category using my_list %}'
+        result = render_string(tpl, context)
+        self.assertEqual(result, expected_url)
+
+        tpl = '{% load sitecats %}{% sitecats_url for my_category using my_list as someurl %}'
+        render_string(tpl, context)
+        self.assertEqual(context.get('someurl'), expected_url)
+
+        # testing CategoryList.show_links
+        tpl = '{% load sitecats %}{% sitecats_url for my_category using my_list %}'
+        result = render_string(tpl, Context({'my_category': self.cat2, 'my_list': self.cl_cat2}))
+        self.assertEqual(result, str(self.cat2.id))
+
+    def test_sitecats_categories(self):
+        tpl = '{% load sitecats %}{% sitecats_categories %}'
+        self.assertRaises(TemplateSyntaxError, render_string, tpl)
+
+        # testing CategoryList passed into `from` clause
+        context = Context({'my_categories_list': self.cl_cat3})
+        tpl = '{% load sitecats %}{% sitecats_categories from my_categories_list %}'
+        result = render_string(tpl, context)
+        self.assertIn('data-catid="%s"' % self.cat3.id, result)
+        self.assertIn('data-catid="%s"' % self.cat31.id, result)
+
+        # testing list of CategoryList passed into `from` clause
+        context = Context({'my_categories_list': [self.cl_cat3]})
+        tpl = '{% load sitecats %}{% sitecats_categories from my_categories_list %}'
+        result = render_string(tpl, context)
+        self.assertIn('data-catid="%s"' % self.cat3.id, result)
+        self.assertIn('data-catid="%s"' % self.cat31.id, result)
+
+        # testing unknown type passed into `from` clause
+        context = Context({'my_categories_list': object()})
+        tpl = '{% load sitecats %}{% sitecats_categories from my_categories_list %}'
+        result = render_string(tpl, context)
+        self.assertEqual(result, '')
+
+        with override_settings(DEBUG=True):
+            context = Context({'my_categories_list': object()})
+            tpl = '{% load sitecats %}{% sitecats_categories from my_categories_list %}'
+            self.assertRaises(SitecatsConfigurationError, render_string, tpl, context)
 
 
 class CategoryModelTest(TestCase):
@@ -86,6 +171,66 @@ class CategoryModelTest(TestCase):
     def test_strip_title(self):
         cat1 = create_category(' my title ')
         self.assertEqual(cat1.title, 'my title')
+
+
+class TieTest(TestCase):
+
+    def test_get_linked_objects(self):
+        user = create_user()
+
+        cat1 = create_category()
+        cat2 = create_category()
+        cat3 = create_category()
+
+        article1 = create_article()
+        article2 = create_article()
+        article3 = create_article()
+
+        article1.add_to_category(cat1, user)
+        article2.add_to_category(cat1, user)
+        article3.add_to_category(cat1, user)
+        article2.add_to_category(cat2, user)
+        article3.add_to_category(cat3, user)
+
+        linked = MODEL_TIE.get_linked_objects()
+        keys = linked.keys()
+        self.assertIn(Article, keys)
+        self.assertNotIn(Comment, keys)
+
+        self.assertIn(article1, linked[Article])
+        self.assertIn(article2, linked[Article])
+        self.assertIn(article3, linked[Article])
+
+        comment1 = create_comment()
+        comment1.add_to_category(cat1, user)
+
+        linked = MODEL_TIE.get_linked_objects()
+        keys = linked.keys()
+        self.assertIn(Article, keys)
+        self.assertIn(Comment, keys)
+
+        self.assertIn(comment1, linked[Comment])
+
+        # testing `id_only`
+        linked = MODEL_TIE.get_linked_objects(id_only=True)
+        self.assertIn(article1.id, linked[Article])
+        self.assertIn(article2.id, linked[Article])
+        self.assertIn(article3.id, linked[Article])
+        self.assertIn(comment1.id, linked[Comment])
+
+        # testing `by_category`
+        linked = MODEL_TIE.get_linked_objects(by_category=True)
+        keys = linked.keys()
+        self.assertIn(cat1, keys)
+        self.assertIn(cat2, keys)
+        self.assertIn(cat3, keys)
+
+        self.assertEqual(len(linked[cat1]), 2)  # Article + Comment
+        self.assertEqual(len(linked[cat2]), 1)
+        self.assertEqual(len(linked[cat3]), 1)
+
+        a = 1
+
 
 
 class ModelWithCategoryTest(TestCase):
@@ -298,7 +443,6 @@ class CategoryListWithObjTest(TestCase):
         self.cl.set_obj(self.article)
         self.cl_cat1 = CategoryList('cat1', show_title=True, show_links=False, cat_html_class='somecss')
         self.cl_cat1.set_obj(self.article)
-
 
     def test_get_choices(self):
         choices = self.cl.get_choices()

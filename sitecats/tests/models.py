@@ -11,3 +11,6 @@ class Comment(ModelWithCategory):
 class Article(ModelWithCategory):
 
     title = models.CharField('title', max_length=255)
+
+    def get_category_absolute_url(self, category):
+        return '%s/%s' % (category.id, self.title)
