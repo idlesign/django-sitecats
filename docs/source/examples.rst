@@ -135,3 +135,14 @@ Get model instances associated with a category
         objects = Article.get_from_category_qs(category)
 
         ...
+
+
+Get all ties by categories
+--------------------------
+
+.. code-block:: python
+
+    from sitecats.toolbox import get_tie_model
+
+    linked_objects = get_tie_model().get_linked_objects(by_category=True)
+
