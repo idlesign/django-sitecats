@@ -79,10 +79,16 @@ class CategoryList(object):
     def __init__(self, alias=None, show_title=False, show_links=True, cat_html_class=''):
         """
         :param str alias: Alias of a category to construct a list from (list will include subcategories)
+
         :param bool show_title: Flag to render parent category title
+
         :param bool|callable show_links: Boolean flag to render links for category pages,
             or a callable which accepts Category instance and returns an URL for it.
+            If boolean and True links will be set to UNRESOLVED_URL_MARKER (useful
+            for client-side links generation based on data-* attrs of HTML elements).
+
         :param str cat_html_class: HTML classes to be added to categories
+
         :return:
         """
         self.alias = alias
@@ -177,7 +183,7 @@ class CategoryList(object):
         """Returns a custom attribute of a category model for this list.
 
         :param str name: Attribute name
-        :param default: Default value if attribute is not found
+        :param object default: Default value if attribute is not found
         :return: attribute value
         """
         category = self.get_category_model()

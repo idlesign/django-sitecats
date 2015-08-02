@@ -258,12 +258,12 @@ class ModelWithCategory(models.Model):
         """Enables editor functionality for categories of this object.
 
         :param Request request: Django request object
-        :param dict|None editor_init_kwargs: Keyword args to initialize category lists editor with.
+        :param dict editor_init_kwargs: Keyword args to initialize category lists editor with.
             See CategoryList.enable_editor()
-        :param list|None additional_parents_aliases: Aliases of categories for editor to render
+        :param list additional_parents_aliases: Aliases of categories for editor to render
             even if this object has no tie to them.
-        :param dict|None lists_init_kwargs: Keyword args to initialize CategoryList objects with
-        :param dict|None handler_init_kwargs: Keyword args to initialize CategoryRequestHandler object with
+        :param dict lists_init_kwargs: Keyword args to initialize CategoryList objects with
+        :param dict handler_init_kwargs: Keyword args to initialize CategoryRequestHandler object with
         :return:
         """
         from .toolbox import CategoryRequestHandler
