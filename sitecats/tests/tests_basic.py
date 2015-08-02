@@ -1,25 +1,14 @@
 from uuid import uuid4
 
 from django.test import TestCase
-from django.db import models
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 
-from .models import Category, Tie, ModelWithCategory
-from .exceptions import SitecatsLockedCategoryDelete
-from .toolbox import CategoryList, CategoryRequestHandler, get_category_aliases_under
+from sitecats.models import Category, Tie
+from sitecats.exceptions import SitecatsLockedCategoryDelete
+from sitecats.toolbox import CategoryList, CategoryRequestHandler, get_category_aliases_under
 
-
-# TODO These two models creation will fail on Django 1.7, if migration dir is detected. What a mess!
-
-class Comment(ModelWithCategory):
-
-    title = models.CharField('title', max_length=255)
-
-
-class Article(ModelWithCategory):
-
-    title = models.CharField('title', max_length=255)
+from models import Comment, Article
 
 
 def create_comment():
