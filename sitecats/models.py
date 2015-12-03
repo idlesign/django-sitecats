@@ -4,7 +4,14 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+
+
+try:
+    # Django <= 1.6
+    from django.contrib.contenttypes.generic import GenericForeignKey, GenericRelation
+except ImportError:
+    from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+
 
 from .settings import MODEL_CATEGORY, MODEL_TIE
 from .exceptions import SitecatsLockedCategoryDelete
@@ -140,7 +147,7 @@ class TieBase(models.Model):
     content_type = models.ForeignKey(
         ContentType, verbose_name=_('Content type'), related_name='%(app_label)s_%(class)s_tags')
 
-    linked_object = generic.GenericForeignKey()
+    linked_object = GenericForeignKey()
 
     class Meta(object):
         abstract = True
@@ -211,7 +218,7 @@ class ModelWithCategory(models.Model):
     Mix in this helper to your model class to be able to categorize model instances.
 
     """
-    categories = generic.GenericRelation(MODEL_TIE)
+    categories = GenericRelation(MODEL_TIE)
 
     class Meta(object):
         abstract = True
