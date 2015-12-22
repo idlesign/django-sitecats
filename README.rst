@@ -17,8 +17,8 @@ https://github.com/idlesign/django-sitecats
 .. image:: https://img.shields.io/travis/idlesign/django-sitecats/master.svg
     :target: https://travis-ci.org/idlesign/django-sitecats
 
-.. image:: https://img.shields.io/codeclimate/github/idlesign/django-sitecats.svg
-   :target: https://codeclimate.com/github/idlesign/django-sitecats
+.. image:: https://landscape.io/github/idlesign/django-sitecats/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/idlesign/django-sitecats/master
 
 
 Description
