@@ -12,7 +12,7 @@ Let's allow categorization for ``Article`` model.
 2. Then we need to add at least one root category, to show up in our categories editor.
 
    Let's create two root categories with `language` and `os` aliases. This could be done either programmatically
-   (instantiate `Category` model) or with Django Admin Contrib (install `django-admirarchy<https://github.com/idlesign/django-admirarchy>`_
+   (instantiate `Category` model) or with Django Admin Contrib (install django-admirarchy_
    to simplify navigation).
 
 3. Now to our views:
@@ -97,3 +97,5 @@ And on edit page:
 
 
 .. image:: _static/categories_edit.png
+
+.. _django-admirarchy: https://github.com/idlesign/django-admirarchy
