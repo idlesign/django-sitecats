@@ -7,10 +7,10 @@ from django.contrib.contenttypes.models import ContentType
 
 
 try:
+    from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+except ImportError:
     # Django <= 1.6
     from django.contrib.contenttypes.generic import GenericForeignKey, GenericRelation
-except ImportError:
-    from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 
 
 from .settings import MODEL_CATEGORY, MODEL_TIE
