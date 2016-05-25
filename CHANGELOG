@@ -1,6 +1,11 @@
 django-sitecats changelog
 =========================
 
+Unreleased
+----------
+* Django 1.9 deprecation warning silenced.
+
+
 v0.6.1
 ------
 * Django 1.9 compatibility improvements.
