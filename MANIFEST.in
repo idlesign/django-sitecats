@@ -5,16 +5,16 @@ include LICENSE
 include README.rst
 
 include docs/Makefile
-recursive-include docs .rst
-recursive-include docs .py
+recursive-include docs *.rst
+recursive-include docs *.py
 
 recursive-include sitecats/tests *
 recursive-include sitecats/locale *
 recursive-include sitecats/static *
-recursive-include sitecats/templates .html
-recursive-include sitecats/templatetags .py
-recursive-include sitecats/migrations .py
-recursive-include sitecats/south_migrations .py
+recursive-include sitecats/templates *.html
+recursive-include sitecats/templatetags *.py
+recursive-include sitecats/migrations *.py
+recursive-include sitecats/south_migrations *.py
 
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
