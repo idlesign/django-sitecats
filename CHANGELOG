@@ -2,8 +2,8 @@ django-sitecats changelog
 =========================
 
 
-Unreleased
-----------
+v0.6.2
+------
 * Package distribution fix.
 * Django 1.9 deprecation warning silenced.
 
