@@ -12,6 +12,7 @@ from sitecats.exceptions import SitecatsLockedCategoryDelete, SitecatsConfigurat
 from sitecats.toolbox import CategoryList, CategoryRequestHandler, get_category_aliases_under, get_tie_model, \
     get_category_model
 from sitecats.settings import UNRESOLVED_URL_MARKER
+from sitecats.templatetags.sitecats import _CONTEXT_FLATTEN
 
 from .models import Comment, Article
 
@@ -21,7 +22,7 @@ MODEL_CATEGORY = get_category_model()
 
 
 def render_string(string, context=None):
-    return Template(string).render(Context(context))
+    return Template(string).render(context if _CONTEXT_FLATTEN else Context(context))
 
 
 def create_comment():

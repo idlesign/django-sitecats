@@ -1,4 +1,4 @@
-from django import template
+from django import template, VERSION
 from django.conf import settings
 from django.template.loader import get_template
 from django.template.base import FilterExpression
@@ -9,6 +9,9 @@ from ..exceptions import SitecatsConfigurationError
 
 
 register = template.Library()
+
+
+_CONTEXT_FLATTEN = VERSION >= (1, 11)
 
 
 @register.tag
@@ -90,7 +93,7 @@ class sitecats_categoriesNode(template.Node):
         context.push()
         context['sitecats_categories'] = target_obj
         template_path = resolve(self.use_template) or 'sitecats/categories.html'
-        contents = get_template(template_path).render(context)
+        contents = get_template(template_path).render(context.flatten() if _CONTEXT_FLATTEN else context)
         context.pop()
 
         return contents
