@@ -2,8 +2,8 @@ django-sitecats changelog
 =========================
 
 
-Unreleased
-----------
+v0.6.3
+------
 * Django 1.11 compatibility improvements.
 
 
