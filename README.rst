@@ -5,9 +5,6 @@ https://github.com/idlesign/django-sitecats
 .. image:: https://img.shields.io/pypi/v/django-sitecats.svg
     :target: https://pypi.python.org/pypi/django-sitecats
 
-.. image:: https://img.shields.io/pypi/dm/django-sitecats.svg
-    :target: https://pypi.python.org/pypi/django-sitecats
-
 .. image:: https://img.shields.io/pypi/l/django-sitecats.svg
     :target: https://pypi.python.org/pypi/django-sitecats
 
