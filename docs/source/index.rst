@@ -18,8 +18,8 @@ This application is just about structuring your data: build categories hierarchy
 Requirements
 ------------
 
-1. Python 2.7+, 3.2+
-2. Django 1.5+
+1. Python 2.7+, 3.4+
+2. Django 1.7+
 3. Django Auth contrib enabled
 4. Django Admin contrib enabled (optional)
 5. django-admirarchy for Django Admin contrib (optional)

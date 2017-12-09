@@ -1,10 +1,10 @@
 from collections import OrderedDict
 
-from etc.toolbox import get_model_class_from_string
-from django import VERSION
+from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db.models import signals, Count
+from etc.toolbox import get_model_class_from_string
 
 from .settings import MODEL_CATEGORY, MODEL_TIE
 
@@ -31,11 +31,7 @@ def get_cache():
     global _SITECATS_CACHE
 
     if _SITECATS_CACHE is None:
-        if VERSION < (1, 7, 0):
-            _SITECATS_CACHE = Cache()  # Caching object.
-        else:
-            from django.apps import apps
-            _SITECATS_CACHE = apps.get_app_config('sitecats').get_categories_cache()
+        _SITECATS_CACHE = apps.get_app_config('sitecats').get_categories_cache()
 
     return _SITECATS_CACHE
 

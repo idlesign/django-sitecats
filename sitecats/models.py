@@ -1,22 +1,15 @@
 from collections import defaultdict
-from django.db import models
+
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
-from django.utils.encoding import python_2_unicode_compatible
+from django.contrib.contenttypes.generic import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
+from django.utils.translation import ugettext_lazy as _
 
-
-try:
-    from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-except ImportError:
-    # Django <= 1.6
-    from django.contrib.contenttypes.generic import GenericForeignKey, GenericRelation
-
-
-from .settings import MODEL_CATEGORY, MODEL_TIE
 from .exceptions import SitecatsLockedCategoryDelete
+from .settings import MODEL_CATEGORY, MODEL_TIE
 from .utils import get_tie_model
-
 
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
