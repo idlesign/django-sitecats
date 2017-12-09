@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from django.conf import settings
-from django.contrib.contenttypes.generic import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
@@ -12,12 +12,6 @@ from .settings import MODEL_CATEGORY, MODEL_TIE
 from .utils import get_tie_model
 
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
-
-
-# This allows South to handle our custom 'CharFieldNullable' field.
-if 'south' in settings.INSTALLED_APPS:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ['^sitecats\.models\.CharFieldNullable'])
 
 
 class CharFieldNullable(models.CharField):
@@ -54,13 +48,14 @@ class CategoryBase(models.Model):
 
     parent = models.ForeignKey(
         'self', related_name='%(class)s_parents', verbose_name=_('Parent'),
-        help_text=_('Parent category.'), db_index=True, null=True, blank=True)
+        help_text=_('Parent category.'), db_index=True, null=True, blank=True, on_delete=models.CASCADE)
     note = models.TextField(_('Note'), blank=True)
 
     status = models.IntegerField(_('Status'), null=True, blank=True, db_index=True)
     slug = CharFieldNullable(verbose_name=_('Slug'), unique=True, max_length=250, null=True, blank=True)
 
-    creator = models.ForeignKey(USER_MODEL, related_name='%(class)s_creators', verbose_name=_('Creator'))
+    creator = models.ForeignKey(
+        USER_MODEL, related_name='%(class)s_creators', verbose_name=_('Creator'), on_delete=models.CASCADE)
     time_created = models.DateTimeField(_('Date created'), auto_now_add=True)
     time_modified = models.DateTimeField(_('Date modified'), editable=False, auto_now=True)
 
@@ -128,17 +123,20 @@ class TieBase(models.Model):
     to customize model fields and behaviour.
 
     """
-    category = models.ForeignKey(MODEL_CATEGORY, related_name='%(class)s_categories', verbose_name=_('Category'))
+    category = models.ForeignKey(
+        MODEL_CATEGORY, related_name='%(class)s_categories', verbose_name=_('Category'), on_delete=models.CASCADE)
     note = models.TextField(_('Note'), blank=True)
     status = models.IntegerField(_('Status'), null=True, blank=True, db_index=True)
 
-    creator = models.ForeignKey(USER_MODEL, related_name='%(class)s_creators', verbose_name=_('Creator'))
+    creator = models.ForeignKey(
+        USER_MODEL, related_name='%(class)s_creators', verbose_name=_('Creator'), on_delete=models.CASCADE)
     time_created = models.DateTimeField(_('Date created'), auto_now_add=True)
 
     # Here follows a link to an object.
     object_id = models.PositiveIntegerField(verbose_name=_('Object ID'), db_index=True)
     content_type = models.ForeignKey(
-        ContentType, verbose_name=_('Content type'), related_name='%(app_label)s_%(class)s_tags')
+        ContentType, verbose_name=_('Content type'), related_name='%(app_label)s_%(class)s_tags',
+        on_delete=models.CASCADE)
 
     linked_object = GenericForeignKey()
 

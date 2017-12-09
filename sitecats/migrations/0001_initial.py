@@ -27,8 +27,8 @@ class Migration(migrations.Migration):
                 ('time_created', models.DateTimeField(auto_now_add=True, verbose_name='Date created')),
                 ('time_modified', models.DateTimeField(auto_now=True, verbose_name='Date modified')),
                 ('sort_order', models.PositiveIntegerField(default=0, help_text='Item position among other categories under the same parent.', verbose_name='Sort order', db_index=True)),
-                ('creator', models.ForeignKey(related_name='category_creators', verbose_name='Creator', to=settings.AUTH_USER_MODEL)),
-                ('parent', models.ForeignKey(related_name='category_parents', blank=True, to='sitecats.Category', help_text='Parent category.', null=True, verbose_name='Parent')),
+                ('creator', models.ForeignKey(related_name='category_creators', verbose_name='Creator', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
+                ('parent', models.ForeignKey(related_name='category_parents', blank=True, to='sitecats.Category', help_text='Parent category.', null=True, verbose_name='Parent', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -45,9 +45,9 @@ class Migration(migrations.Migration):
                 ('status', models.IntegerField(db_index=True, null=True, verbose_name='Status', blank=True)),
                 ('time_created', models.DateTimeField(auto_now_add=True, verbose_name='Date created')),
                 ('object_id', models.PositiveIntegerField(verbose_name='Object ID', db_index=True)),
-                ('category', models.ForeignKey(related_name='tie_categories', verbose_name='Category', to='sitecats.Category')),
-                ('content_type', models.ForeignKey(related_name='sitecats_tie_tags', verbose_name='Content type', to='contenttypes.ContentType')),
-                ('creator', models.ForeignKey(related_name='tie_creators', verbose_name='Creator', to=settings.AUTH_USER_MODEL)),
+                ('category', models.ForeignKey(related_name='tie_categories', verbose_name='Category', to='sitecats.Category', on_delete=models.CASCADE)),
+                ('content_type', models.ForeignKey(related_name='sitecats_tie_tags', verbose_name='Content type', to='contenttypes.ContentType', on_delete=models.CASCADE)),
+                ('creator', models.ForeignKey(related_name='tie_creators', verbose_name='Creator', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
