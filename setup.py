@@ -45,12 +45,12 @@ setup(
     test_suite='tests',
     tests_require=[
         'pytest',
-        'pytest-djangoapp>=0.4.2',
+        'pytest-djangoapp>=0.9.0',
     ],
 
     classifiers=[
         # As in https://pypi.python.org/pypi?:action=list_classifiers
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
