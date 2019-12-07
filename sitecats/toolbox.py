@@ -1,9 +1,7 @@
 from inspect import getargspec
 from collections import namedtuple, OrderedDict, Callable
 
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
-from django.utils.six import string_types
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 
@@ -68,7 +66,6 @@ def get_category_lists(init_kwargs=None, additional_parents_aliases=None, obj=No
     return lists
 
 
-@python_2_unicode_compatible
 class CategoryList(object):
     """Represents a set on categories under a parent category on page."""
     _cache_category = None
@@ -261,7 +258,7 @@ class CategoryRequestHandler(object):
         editor_init_kwargs = editor_init_kwargs or {}
 
         for lst in category_lists:
-            if isinstance(lst, string_types):  # Spawn CategoryList object from base category alias.
+            if isinstance(lst, str):  # Spawn CategoryList object from base category alias.
                 lst = self.list_cls(lst, **lists_init_kwargs)
             elif not isinstance(lst, CategoryList):
                 raise SitecatsConfigurationError(

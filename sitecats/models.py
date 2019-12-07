@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 from .exceptions import SitecatsLockedCategoryDelete
@@ -26,7 +25,6 @@ class CharFieldNullable(models.CharField):
         return self.to_python(value)
 
 
-@python_2_unicode_compatible
 class CategoryBase(models.Model):
     """Base class for category models.
 
@@ -113,7 +111,6 @@ class CategoryBase(models.Model):
         return '%s%s' % (self.title, alias)
 
 
-@python_2_unicode_compatible
 class TieBase(models.Model):
     """Base class for ties models.
 
