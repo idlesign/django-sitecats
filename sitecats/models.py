@@ -1,16 +1,25 @@
 from collections import defaultdict
+from typing import Union, Dict, List, Any
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.http import HttpRequest
+from django.utils.translation import gettext_lazy as _
 
 from .exceptions import SitecatsLockedCategoryDelete
 from .settings import MODEL_CATEGORY, MODEL_TIE
 from .utils import get_tie_model
 
+if False:  # pragma: nocover
+    from django.contrib.auth.models import User # noqa
+    from .toolbox import CategoryList
+
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
+
+
+TypeLinked = Dict['CategoryBase', Union[List[int], List['ModelWithCategory'], models.QuerySet]]
 
 
 class CharFieldNullable(models.CharField):
@@ -61,20 +70,20 @@ class CategoryBase(models.Model):
         _('Sort order'),
         help_text=_('Item position among other categories under the same parent.'), db_index=True, default=0)
 
-    class Meta(object):
+    class Meta:
         abstract = True
         verbose_name = _('Category')
         verbose_name_plural = _('Categories')
         unique_together = ('title', 'parent')
 
     @classmethod
-    def add(cls, title, creator, parent=None):
+    def add(cls, title: str, creator: 'User', parent: 'CategoryBase' = None) -> 'CategoryBase':
         """Creates a category.
 
-        :param str title:
-        :param User creator:
-        :param Category|None parent:
-        :return:
+        :param title:
+        :param creator:
+        :param parent:
+
         """
         obj = cls(title=title, creator=creator, parent=parent)
         obj.save()
@@ -85,10 +94,12 @@ class CategoryBase(models.Model):
 
         :param args:
         :param kwargs:
-        :return:
+
         """
+
         if self.is_locked:
-            raise SitecatsLockedCategoryDelete('Unable to delete locked `%s` category.' % self)
+            raise SitecatsLockedCategoryDelete(f'Unable to delete locked `{self}` category.')
+
         super(CategoryBase, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
@@ -96,10 +107,12 @@ class CategoryBase(models.Model):
 
         :param args:
         :param kwargs:
-        :return:
+
         """
         self.title = self.title.strip()
+
         super(CategoryBase, self).save(*args, **kwargs)
+
         if self.sort_order == 0:
             self.sort_order = self.id
             self.save()
@@ -107,8 +120,8 @@ class CategoryBase(models.Model):
     def __str__(self):
         alias = ''
         if self.alias:
-            alias = ' (%s)' % self.alias
-        return '%s%s' % (self.title, alias)
+            alias = f' ({self.alias})'
+        return f'{self.title}{alias}'
 
 
 class TieBase(models.Model):
@@ -137,24 +150,28 @@ class TieBase(models.Model):
 
     linked_object = GenericForeignKey()
 
-    class Meta(object):
+    class Meta:
         abstract = True
         verbose_name = _('Tie')
         verbose_name_plural = _('Ties')
 
     def __str__(self):
-        return '%s:%s tied to %s' % (self.content_type, self.object_id, self.category)
+        return f'{self.content_type}:{self.object_id} tied to {self.category}'
 
     @classmethod
-    def get_linked_objects(cls, filter_kwargs=None, id_only=False, by_category=False):
+    def get_linked_objects(
+            cls,
+            filter_kwargs: dict = None,
+            id_only: bool = False,
+            by_category: bool = False
+
+    ) -> Union[TypeLinked, Dict[str, TypeLinked]]:
         """Returns objects linked to categories in a dictionary indexed by model classes.
 
         :param dict filter_kwargs: Filter for ties.
         :param bool id_only: If True only IDs of linked objects are returned, otherwise - QuerySets.
         :param bool by_category: If True only linked objects and their models a grouped by categories.
 
-        :rtype: defaultdict
-        :return:
         """
         filter_kwargs = filter_kwargs or {}
 
@@ -176,6 +193,7 @@ class TieBase(models.Model):
             model = map_type_to_model[type_id]
             if by_category:
                 results[row.category][model].append(row.object_id)
+
             else:
                 results[model].append(row.object_id)
 
@@ -208,77 +226,101 @@ class ModelWithCategory(models.Model):
     """
     categories = GenericRelation(MODEL_TIE)
 
-    class Meta(object):
+    class Meta:
         abstract = True
 
     _category_lists_init_kwargs = None
     _category_editor = None
 
-    def set_category_lists_init_kwargs(self, kwa_dict):
+    def set_category_lists_init_kwargs(self, kwa_dict: dict):
         """Sets keyword arguments for category lists which can be spawned
         by get_categories().
 
-        :param dict|None kwa_dict:
-        :return:
+        :param kwa_dict:
+
         """
         self._category_lists_init_kwargs = kwa_dict
 
-    def get_category_lists(self, init_kwargs=None, additional_parents_aliases=None):
+    def get_category_lists(
+            self,
+            init_kwargs: dict = None,
+            additional_parents_aliases: List[str] = None
+
+    ) -> List['CategoryList']:
         """Returns a list of CategoryList objects, associated with
         this model instance.
 
-        :param dict|None init_kwargs:
-        :param list|None additional_parents_aliases:
-        :rtype: list|CategoryRequestHandler
-        :return:
+        :param init_kwargs:
+        :param additional_parents_aliases:
+
         """
 
         if self._category_editor is not None:  # Return editor lists instead of plain lists if it's enabled.
             return self._category_editor.get_lists()
 
         from .toolbox import get_category_lists
+
         init_kwargs = init_kwargs or {}
 
         catlist_kwargs = {}
+
         if self._category_lists_init_kwargs is not None:
             catlist_kwargs.update(self._category_lists_init_kwargs)
+
         catlist_kwargs.update(init_kwargs)
 
-        lists = get_category_lists(catlist_kwargs, additional_parents_aliases, obj=self)
+        return get_category_lists(catlist_kwargs, additional_parents_aliases, obj=self)
 
-        return lists
-
-    def enable_category_lists_editor(self, request, editor_init_kwargs=None, additional_parents_aliases=None,
-                                     lists_init_kwargs=None, handler_init_kwargs=None):
+    def enable_category_lists_editor(
+            self,
+            request : HttpRequest,
+            editor_init_kwargs: Dict[str, Any] = None,
+            additional_parents_aliases: List[str] = None,
+            lists_init_kwargs: Dict[str, Any] = None,
+            handler_init_kwargs: Dict[str, Any] = None
+    ):
         """Enables editor functionality for categories of this object.
 
-        :param Request request: Django request object
-        :param dict editor_init_kwargs: Keyword args to initialize category lists editor with.
+        :param request: Django request object
+
+        :param editor_init_kwargs: Keyword args to initialize category lists editor with.
             See CategoryList.enable_editor()
-        :param list additional_parents_aliases: Aliases of categories for editor to render
+
+        :param additional_parents_aliases: Aliases of categories for editor to render
             even if this object has no tie to them.
-        :param dict lists_init_kwargs: Keyword args to initialize CategoryList objects with
-        :param dict handler_init_kwargs: Keyword args to initialize CategoryRequestHandler object with
-        :return:
+
+        :param lists_init_kwargs: Keyword args to initialize CategoryList objects with
+
+        :param handler_init_kwargs: Keyword args to initialize CategoryRequestHandler object with
+
         """
         from .toolbox import CategoryRequestHandler
+
         additional_parents_aliases = additional_parents_aliases or []
+
         lists_init_kwargs = lists_init_kwargs or {}
         editor_init_kwargs = editor_init_kwargs or {}
         handler_init_kwargs = handler_init_kwargs or {}
+
         handler = CategoryRequestHandler(request, self, **handler_init_kwargs)
+
         lists = self.get_category_lists(
-            init_kwargs=lists_init_kwargs, additional_parents_aliases=additional_parents_aliases)
+            init_kwargs=lists_init_kwargs,
+            additional_parents_aliases=additional_parents_aliases,
+        )
+
         handler.register_lists(lists, lists_init_kwargs=lists_init_kwargs, editor_init_kwargs=editor_init_kwargs)
+
         self._category_editor = handler  # Set link to handler to mutate get_category_lists() behaviour.
+
         return handler.listen()
 
-    def add_to_category(self, category, user):
+    def add_to_category(self, category: 'CategoryBase', user: 'User') -> TieBase:
         """Add this model instance to a category.
 
-        :param Category category: Category to add this object to
-        :param User user: User heir who adds
-        :return:
+        :param category: Category to add this object to
+        :param user: User heir who adds
+
         """
         init_kwargs = {
             'category': category,
@@ -289,51 +331,61 @@ class ModelWithCategory(models.Model):
         tie.save()
         return tie
 
-    def remove_from_category(self, category):
+    def remove_from_category(self, category: CategoryBase):
         """Removes this object from a given category.
 
-        :param Category category:
-        :return:
+        :param category:
+
         """
         ctype = ContentType.objects.get_for_model(self)
         self.categories.model.objects.filter(category=category, content_type=ctype, object_id=self.id).delete()
 
     @classmethod
-    def get_ties_for_categories_qs(cls, categories, user=None, status=None):
+    def get_ties_for_categories_qs(
+            cls,
+            categories: Union['CategoryBase', List['CategoryBase']],
+            user: 'User' = None,
+            status: int = None
+
+    ) -> Union[List['TieBase'], models.QuerySet]:
         """Returns a QuerySet of Ties for the given categories.
 
-        :param list|Category categories:
-        :param User|None user:
-        :param int|None status:
-        :return:
+        :param categories:
+        :param user:
+        :param status:
+
         """
         if not isinstance(categories, list):
             categories = [categories]
 
         category_ids = []
+
         for category in categories:
-            if isinstance(category, models.Model):
-                category_ids.append(category.id)
-            else:
-                category_ids.append(category)
+            category_ids.append(category.id if isinstance(category, models.Model) else category)
+
         filter_kwargs = {
             'content_type': ContentType.objects.get_for_model(cls, for_concrete_model=False),
             'category_id__in': category_ids
         }
+
         if user is not None:
             filter_kwargs['creator'] = user
+
         if status is not None:
             filter_kwargs['status'] = status
-        ties = get_tie_model().objects.filter(**filter_kwargs)
-        return ties
+
+        return get_tie_model().objects.filter(**filter_kwargs)
 
     @classmethod
-    def get_from_category_qs(cls, category):
+    def get_from_category_qs(
+            cls,
+            category: 'CategoryBase'
+
+    ) -> Union[List['ModelWithCategory'], models.QuerySet]:
         """Returns a QuerySet of objects of this type associated with the given category.
 
-        :param Category category:
-        :rtype: list
-        :return:
+        :param category:
+
         """
         ids = cls.get_ties_for_categories_qs(category).values_list('object_id').distinct()
         filter_kwargs = {'id__in': [i[0] for i in ids]}

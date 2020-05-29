@@ -57,7 +57,7 @@ def create_category(user_create):
     return create_category_
 
 
-class TestTemplateTags(object):
+class TestTemplateTags:
 
     @pytest.fixture
     def setup(self, user, create_article, create_category):
@@ -128,7 +128,7 @@ class TestTemplateTags(object):
             template_render_tag('sitecats', 'sitecats_categories from my_categories_list', context)
 
 
-class TestCategoryModel(object):
+class TestCategoryModel:
 
     def test_alias_unique(self, create_category):
         create_category(alias='doubled')
@@ -180,7 +180,7 @@ class TestCategoryModel(object):
         assert cat1.title == 'my title'
 
 
-class TestTie(object):
+class TestTie:
 
     def test_get_linked_objects(self, user, create_article, create_comment, create_category):
         cat1 = create_category()
@@ -235,7 +235,7 @@ class TestTie(object):
         assert len(linked[cat3]) == 1
 
 
-class TestModelWithCategory(object):
+class TestModelWithCategory:
 
     # TODO set_category_lists_init_kwargs, get_category_lists, enable_category_lists_editor
 
@@ -303,7 +303,7 @@ class TestModelWithCategory(object):
         assert comment in comments_in_cat
 
 
-class TestToolbox(object):
+class TestToolbox:
 
     def test_get_category_aliases_under(self, create_category):
         cat1 = create_category(alias='cat1',)
@@ -324,7 +324,7 @@ class TestToolbox(object):
         assert 'cat11' in under_cat1
 
 
-class TestCategoryListBasic(object):
+class TestCategoryListBasic:
 
     @pytest.fixture
     def setup(self, user, create_category):
@@ -372,7 +372,7 @@ class TestCategoryListBasic(object):
         assert self.cl_cat1.get_note() == self.cat1.note
 
 
-class TestCategoryListNoObj(object):
+class TestCategoryListNoObj:
 
     @pytest.fixture
     def setup(self, user, create_category):
@@ -414,7 +414,7 @@ class TestCategoryListNoObj(object):
         assert self.cat111 in cats
 
 
-class TestCategoryListWithObj(object):
+class TestCategoryListWithObj:
 
     @pytest.fixture
     def setup(self, user, create_article, create_comment, create_category):

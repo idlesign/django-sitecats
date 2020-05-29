@@ -1,21 +1,20 @@
-from django import template, VERSION
-from django.conf import settings
-from django.template.loader import get_template
-from django.template.base import FilterExpression
+from typing import List
 
+from django import template
+from django.conf import settings
+from django.template.base import FilterExpression, Parser, Token
+from django.template.loader import get_template
+
+from ..exceptions import SitecatsConfigurationError
 from ..models import ModelWithCategory
 from ..toolbox import CategoryRequestHandler, CategoryList
-from ..exceptions import SitecatsConfigurationError
-
 
 register = template.Library()
 
 
-_CONTEXT_FLATTEN = VERSION >= (1, 11)
-
-
 @register.tag
-def sitecats_url(parser, token):
+def sitecats_url(parser: Parser, token: Token):
+
     tokens = token.split_contents()
     as_clause = detect_clause(parser, 'as', tokens, as_filter_expr=False)
     target_list = detect_clause(parser, 'using', tokens)
@@ -30,7 +29,8 @@ def sitecats_url(parser, token):
 
 
 @register.tag
-def sitecats_categories(parser, token):
+def sitecats_categories(parser: Parser, token: Token):
+
     tokens = token.split_contents()
     use_template = detect_clause(parser, 'template', tokens)
     target_obj = detect_clause(parser, 'from', tokens)
@@ -45,12 +45,13 @@ def sitecats_categories(parser, token):
 
 class sitecats_urlNode(template.Node):
 
-    def __init__(self, category, target_list, as_var):
+    def __init__(self, category, target_list, as_var: bool):
         self.as_var = as_var
         self.target_list = target_list
         self.category = category
 
     def render(self, context):
+
         resolve = lambda arg: arg.resolve(context) if isinstance(arg, FilterExpression) else arg
 
         category = resolve(self.category)
@@ -62,6 +63,7 @@ class sitecats_urlNode(template.Node):
             return url
 
         context[self.as_var] = url
+
         return ''
 
 
@@ -75,31 +77,36 @@ class sitecats_categoriesNode(template.Node):
         resolve = lambda arg: arg.resolve(context) if isinstance(arg, FilterExpression) else arg
 
         target_obj = resolve(self.target_obj)
+
         if isinstance(target_obj, CategoryRequestHandler):
             target_obj = target_obj.get_lists()
+
         elif isinstance(target_obj, ModelWithCategory):
             target_obj = target_obj.get_category_lists()
+
         elif isinstance(target_obj, (list, tuple)):  # Simple list of CategoryList items.
             pass
+
         elif isinstance(target_obj, CategoryList):
             target_obj = (target_obj,)
+
         else:
             if settings.DEBUG:
                 raise SitecatsConfigurationError(
-                    '`sitecats_categories` template tag can\'t accept `%s` type '
-                    'from `%s` template variable.' % (type(target_obj), self.target_obj))
+                    f'`sitecats_categories` template tag can\'t accept `{type(target_obj)}` type '
+                    f'from `{self.target_obj}` template variable.')
             return ''  # Silent fall.
 
         context.push()
         context['sitecats_categories'] = target_obj
         template_path = resolve(self.use_template) or 'sitecats/categories.html'
-        contents = get_template(template_path).render(context.flatten() if _CONTEXT_FLATTEN else context)
+        contents = get_template(template_path).render(context.flatten())
         context.pop()
 
         return contents
 
 
-def detect_clause(parser, clause_name, tokens, as_filter_expr=True):
+def detect_clause(parser: Parser, clause_name: str, tokens: List[Token], as_filter_expr: bool = True):
     """Helper function detects a certain clause in tag tokens list.
     Returns its value.
 
@@ -107,9 +114,13 @@ def detect_clause(parser, clause_name, tokens, as_filter_expr=True):
     if clause_name in tokens:
         t_index = tokens.index(clause_name)
         clause_value = tokens[t_index + 1]
+
         if as_filter_expr:
             clause_value = parser.compile_filter(clause_value)
+
         del tokens[t_index:t_index + 2]
+
     else:
         clause_value = None
+
     return clause_value

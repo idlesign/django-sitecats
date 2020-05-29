@@ -1,5 +1,5 @@
 from django.apps import AppConfig
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 class SitecatsConfig(AppConfig):
@@ -14,9 +14,6 @@ class SitecatsConfig(AppConfig):
         return self._cat_cache
 
     def ready(self):
-        """Instantiate global cache object when ready.
-
-        :return:
-        """
-        from sitecats.utils import Cache
+        """Instantiate global cache object when ready."""
+        from .utils import Cache
         self._cat_cache = Cache()
