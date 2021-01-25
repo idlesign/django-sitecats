@@ -14,10 +14,10 @@ except ImportError:
 @admin.register(get_category_model())
 class CategoryAdmin(MODEL_ADMIN):
 
-    list_display = ('title', 'alias', 'is_locked', 'status')
-    search_fields = ('title', 'alias', 'note', 'creator')
-    list_filter = ('time_created', 'status')
-    ordering = ('sort_order',)
+    list_display = ('title', 'alias', 'is_locked', 'status', 'is_locked')
+    search_fields = ('title', 'alias', 'note', 'slug')
+    list_filter = ('time_created', 'status', 'is_locked')
+    ordering = ('sort_order', 'title')
     date_hierarchy = 'time_created'
     hierarchy = True
 
@@ -44,7 +44,7 @@ class CategoryAdmin(MODEL_ADMIN):
 class TieAdmin(admin.ModelAdmin):
 
     list_display = ('category', 'content_type', 'object_id', 'status')
-    search_fields = ('object_id', 'content_type', 'creator')
+    search_fields = ('object_id',)
     list_filter = ('time_created', 'status', 'content_type')
     ordering = ('-time_created',)
     date_hierarchy = 'time_created'
