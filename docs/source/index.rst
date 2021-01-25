@@ -18,17 +18,11 @@ This application is just about structuring your data: build categories hierarchy
 Requirements
 ------------
 
-.. image:: https://idlesign.github.io/lbc/py2-lbc.svg
-   :target: https://idlesign.github.io/lbc/
-   :alt: LBC Python 2
-
-----
-
-1. Python 3.5+
-2. Django 1.8+
+1. Python 3.6+
+2. Django 2.0+
 3. Django Auth contrib enabled
 4. Django Admin contrib enabled (optional)
-5. django-admirarchy for Django Admin contrib (optional)
+5. ``django-admirarchy`` for Django Admin contrib (optional)
 6. Django Messages contrib enabled (optional)
 7. jQuery (for client side additional functionality; optional)
 

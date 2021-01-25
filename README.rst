@@ -2,12 +2,6 @@ django-sitecats
 ===============
 https://github.com/idlesign/django-sitecats
 
-.. image:: https://idlesign.github.io/lbc/py2-lbc.svg
-   :target: https://idlesign.github.io/lbc/
-   :alt: LBC Python 2
-
-----
-
 .. image:: https://img.shields.io/pypi/v/django-sitecats.svg
     :target: https://pypi.python.org/pypi/django-sitecats
 
@@ -92,4 +86,4 @@ Read the docs, ``sitecats`` can do more.
 Documentation
 -------------
 
-http://django-sitecats.readthedocs.org/
+https://django-sitecats.readthedocs.org/
