@@ -11,9 +11,6 @@ https://github.com/idlesign/django-sitecats
 .. image:: https://img.shields.io/coveralls/idlesign/django-sitecats/master.svg
     :target: https://coveralls.io/r/idlesign/django-sitecats
 
-.. image:: https://img.shields.io/travis/idlesign/django-sitecats/master.svg
-    :target: https://travis-ci.org/idlesign/django-sitecats
-
 
 Description
 -----------
