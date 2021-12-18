@@ -57,7 +57,7 @@ class sitecats_urlNode(template.Node):
         category = resolve(self.category)
         target_obj = resolve(self.target_list)
 
-        url = target_obj.get_category_url(category)
+        url = f'{target_obj.get_category_url(category)}'
 
         if not self.as_var:
             return url

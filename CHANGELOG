@@ -2,6 +2,11 @@ django-sitecats changelog
 =========================
 
 
+Unreleased
+----------
+* Django 4.0 compatibility improved.
+
+
 v1.2.1 [2021-01-25]
 -------------------
 * Fix search in Django admin.
