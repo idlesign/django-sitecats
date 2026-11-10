@@ -1,102 +1,72 @@
-django-sitecats changelog
-=========================
+# django-sitecats changelog
 
+### Unreleased
+* ** Fixed model/migrations drift (explicit on_delete for foreign keys; id field pinned to AutoField).
 
-v1.2.2 [2021-12-18]
--------------------
-* Django 4.0 compatibility improved.
+### v1.2.2 [2021-12-18]
+* ** Django 4.0 compatibility improved.
 
+### v1.2.1 [2021-01-25]
+* ** Fix search in Django admin.
 
-v1.2.1 [2021-01-25]
--------------------
-* Fix search in Django admin.
+### v1.2.0 [2020-05-29]
+* !! Dropped support for Django<2.0.
+* !! Dropped support for Python 2 and 3.5.
 
+### v1.1.0 [2019-12-07]
+* !! Dropped QA for Django 1.7.
+* !! Dropped QA for Python 2.
+* ++ Add Django 3.0 compatibility. Effectively deprecates Py2 support.
 
-v1.2.0 [2020-05-29]
--------------------
-! Dropped support for Django<2.0.
-! Dropped support for Python 2 and 3.5.
+### v1.0.0
+* !! Dropped QA for Python 3.4.
+* ** No functional changes. Celebrating 1.0.0.
 
+### v0.7.0
+* ++ Django 2.0 basic compatibility.
+* ** Dropped support for Python<3.4 and Django<1.7.
 
-v1.1.0 [2019-12-07]
--------------------
-! Dropped QA for Django 1.7.
-! Dropped QA for Python 2.
-+ Add Django 3.0 compatibility. Effectively deprecates Py2 support.
+### v0.6.3
+* ** Django 1.11 compatibility improvements.
 
+### v0.6.2
+* ** Package distribution fix.
+* ** Django 1.9 deprecation warning silenced.
 
-v1.0.0
-------
-! Dropped QA for Python 3.4.
-* No functional changes. Celebrating 1.0.0.
+### v0.6.1
+* ** Django 1.9 compatibility improvements.
 
+### v0.6.0
+* ++ Added TieBase.get_linked_objects().
+* ** IMPORTANT: Added migrations. Use `migrate sitecats --fake` to make DB up-to-date.
 
-v0.7.0
-------
-+ Django 2.0 basic compatibility.
-* Dropped support for Python<3.4 and Django<1.7.
+### v0.5.0
+* ++ Added Spanish loco.
+* ** Improved Django 1.8 compatibility.
 
+### v0.4.0
+* ++ Implemented categories cloud rendering JS.
+* ++ Implemented editor enhancements JS.
 
-v0.6.3
-------
-* Django 1.11 compatibility improvements.
+### v0.3.1
+* ** Fixed TypeError exception when get_category_lists() is used.
 
+### v0.3.0
+* ++ Implemented `toolbox.get_category_lists()`.
+* ** DB hits number decreased.
+* ** Fixed number of ties calculation for items.
+* ** Slight API changes.
 
-v0.6.2
-------
-* Package distribution fix.
-* Django 1.9 deprecation warning silenced.
+### v0.2.0
+* ++ Implemented `category_separator` param support for category editor.
+* ++ Implemented locked category restrictions for Django Admin.
+* ++ Implemented category choices for editors.
+* ++ Implemented `sitecats_url` template tag.
+* ++ get_category_aliases_under() added into toolbox.
+* ++ CategoryRequestHandler error messages now can be customized.
+* ** Fixed category ordering.
+* ** Fixed rendering category with no subcategories in editor.
+* ** Fixed Cache._get_cache_entry() fail to get categories from root.
 
-
-v0.6.1
-------
-* Django 1.9 compatibility improvements.
-
-
-v0.6.0
-----------
-+ Added TieBase.get_linked_objects().
-* IMPORTANT: Added migrations. Use `migrate sitecats --fake` to make DB up-to-date.
-
-
-v0.5.0
-------
-+ Added Spanish loco.
-* Improved Django 1.8 compatibility.
-
-
-v0.4.0
-------
-+ Implemented categories cloud rendering JS.
-+ Implemented editor enhancements JS.
-
-
-v0.3.1
-------
-* Fixed TypeError exception when get_category_lists() is used.
-
-
-v0.3.0
-------
-+ Implemented `toolbox.get_category_lists()`.
-* DB hits number decreased.
-* Fixed number of ties calculation for items.
-* Slight API changes.
-
-
-v0.2.0
-------
-+ Implemented `category_separator` param support for category editor.
-+ Implemented locked category restrictions for Django Admin.
-+ Implemented category choices for editors.
-+ Implemented `sitecats_url` template tag.
-+ get_category_aliases_under() added into toolbox.
-+ CategoryRequestHandler error messages now can be customized.
-* Fixed category ordering.
-* Fixed rendering category with no subcategories in editor.
-* Fixed Cache._get_cache_entry() fail to get categories from root.
-
-
-v0.1.0
-------
-+ Basic functionality.
+### v0.1.0
+* ++ Basic functionality.

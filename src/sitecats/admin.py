@@ -26,7 +26,7 @@ class CategoryAdmin(MODEL_ADMIN):
         if obj is not None and obj.is_locked:
             return False
 
-        return super(CategoryAdmin, self).has_delete_permission(request, obj=obj)
+        return super().has_delete_permission(request, obj=obj)
 
     def get_form(self, request, obj=None, **kwargs):
 
@@ -37,7 +37,7 @@ class CategoryAdmin(MODEL_ADMIN):
             else:
                 self.readonly_fields = ()
 
-        return super(CategoryAdmin, self).get_form(request, obj=obj, **kwargs)
+        return super().get_form(request, obj=obj, **kwargs)
 
 
 @admin.register(get_tie_model())

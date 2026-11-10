@@ -15,7 +15,7 @@ from .exceptions import SitecatsConfigurationError, SitecatsSecurityException, S
     SitecatsValidationError
 
 if False:  # pragma: nocover
-    from .models import CategoryBase # noqa
+    from .models import CategoryBase
 
 
 def get_category_aliases_under(parent_alias: str = None) -> List[str]:
@@ -122,7 +122,7 @@ class CategoryList:
 
         self.show_links = show_links
         self.cat_html_class = cat_html_class
-        self.obj: Optional['ModelWithCategory'] = None
+        self.obj: ModelWithCategory | None = None
         self.editor: namedtuple = None
 
     def __str__(self) ->  str:
@@ -225,7 +225,7 @@ class CategoryList:
         category = self.get_category_model()
         return getattr(category, name, default)
 
-    def get_id(self) -> Optional[int]:
+    def get_id(self) -> int | None:
         """Returns ID attribute of a category of this list."""
         return self.get_category_attr('id', None)
 
@@ -409,7 +409,7 @@ class CategoryRequestHandler:
                 if title.strip()
             ]
 
-        def check_max_num(num: int, max_num: Optional[int], category_title: str):
+        def check_max_num(num: int, max_num: int | None, category_title: str):
             if max_num is not None and num+1 > max_num:
                 subcats_str = ngettext_lazy('subcategory', 'subcategories', max_num)
                 error_msg = _(

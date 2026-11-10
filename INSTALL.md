@@ -1,31 +1,25 @@
-django-sitecats installation
-============================
+# django-sitecats installation
 
+Python `pip` package is required to install `django-sitecats`.
 
-Python ``pip`` package is required to install ``django-sitecats``.
+## From sources
 
+Use the following command line to install `django-sitecats` from sources directory (containing `pyproject.toml`):
 
-From sources
-------------
+```shell
+pip install .
+```
 
-Use the following command line to install ``django-sitecats`` from sources directory (containing setup.py):
+## From PyPI
 
-    pip install .
+Alternatively you can install `django-sitecats` from PyPI:
 
-or
-
-    python setup.py install
-
-
-From PyPI
----------
-
-Alternatively you can install ``django-sitecats`` from PyPI:
-
-    pip install django-sitecats
-
+```shell
+pip install django-sitecats
+```
 
 Use `-U` flag for upgrade:
 
-    pip install -U django-sitecats
-
+```shell
+pip install -U django-sitecats
+```

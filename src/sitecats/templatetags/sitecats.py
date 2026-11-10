@@ -52,7 +52,8 @@ class sitecats_urlNode(template.Node):
 
     def render(self, context):
 
-        resolve = lambda arg: arg.resolve(context) if isinstance(arg, FilterExpression) else arg
+        def resolve(arg):
+            return arg.resolve(context) if isinstance(arg, FilterExpression) else arg
 
         category = resolve(self.category)
         target_obj = resolve(self.target_list)
@@ -74,7 +75,8 @@ class sitecats_categoriesNode(template.Node):
         self.target_obj = target_obj
 
     def render(self, context):
-        resolve = lambda arg: arg.resolve(context) if isinstance(arg, FilterExpression) else arg
+        def resolve(arg):
+            return arg.resolve(context) if isinstance(arg, FilterExpression) else arg
 
         target_obj = resolve(self.target_obj)
 

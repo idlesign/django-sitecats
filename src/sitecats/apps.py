@@ -7,6 +7,7 @@ class SitecatsConfig(AppConfig):
 
     name = 'sitecats'
     verbose_name = _('Site Categories')
+    default_auto_field = 'django.db.models.AutoField'
 
     _cat_cache = None
 

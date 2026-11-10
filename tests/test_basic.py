@@ -10,16 +10,15 @@ from sitecats.models import Category, Tie
 from sitecats.settings import UNRESOLVED_URL_MARKER
 from sitecats.toolbox import CategoryList, get_category_aliases_under, get_tie_model, \
     get_category_model
+from tests.testapp.models import Comment, Article
 
 MODEL_TIE = get_tie_model()
 MODEL_CATEGORY = get_category_model()
 
-from sitecats.tests.testapp.models import Comment, Article
-
 
 @pytest.fixture
 def create_comment():
-    from sitecats.tests.testapp.models import Comment
+    from tests.testapp.models import Comment
 
     def create_comment_():
         comment = Comment(title='comment%s' % uuid4().hex)
@@ -31,7 +30,7 @@ def create_comment():
 
 @pytest.fixture
 def create_article():
-    from sitecats.tests.testapp.models import Article
+    from tests.testapp.models import Article
 
     def create_article_():
         article = Article(title='article%s' % uuid4().hex)
@@ -123,8 +122,9 @@ class TestTemplateTags:
 
         settings.DEBUG = True
 
+        context = template_context({'my_categories_list': object()})
+
         with pytest.raises(SitecatsConfigurationError):
-            context = template_context({'my_categories_list': object()})
             template_render_tag('sitecats', 'sitecats_categories from my_categories_list', context)
 
 
@@ -307,11 +307,11 @@ class TestToolbox:
 
     def test_get_category_aliases_under(self, create_category):
         cat1 = create_category(alias='cat1',)
-        cat2 = create_category(alias='cat2',)
-        cat3 = create_category(alias='cat3')
+        create_category(alias='cat2',)
+        create_category(alias='cat3')
 
-        cat11 = create_category(alias='cat11', parent=cat1)
-        cat111 = create_category(parent=cat1)
+        create_category(alias='cat11', parent=cat1)
+        create_category(parent=cat1)
 
         root = get_category_aliases_under()
         assert len(root) == 3
@@ -345,11 +345,11 @@ class TestCategoryListBasic:
 
         # test_show_links
         assert self.cl.show_links
-        assert self.cl_cat1.show_links == False
+        assert not self.cl_cat1.show_links
 
         # test_show_title
         assert not self.cl.show_title
-        assert self.cl_cat1.show_title == True
+        assert self.cl_cat1.show_title
 
         # test_alias
         assert self.cl.alias is None

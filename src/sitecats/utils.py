@@ -9,7 +9,7 @@ from etc.toolbox import get_model_class_from_string
 from .settings import MODEL_CATEGORY, MODEL_TIE
 
 if False:  # pragma: nocover
-    from .models import CategoryBase, TieBase, ModelWithCategory  # noqa
+    from .models import CategoryBase, TieBase, ModelWithCategory
 
 
 def get_category_model() -> Type['CategoryBase']:
@@ -93,7 +93,7 @@ class Cache:
         self._cache = None
         cache.delete(self.CACHE_ENTRY_NAME)
 
-    ENTIRE_ENTRY_KEY = tuple()
+    ENTIRE_ENTRY_KEY = ()
 
     def _cache_get_entry(
             self,
@@ -203,7 +203,7 @@ class Cache:
 
         return None
 
-    def get_ties_stats(self, categories: List[int], target_model: Optional[Model] = None) -> Dict[int, int]:
+    def get_ties_stats(self, categories: List[int], target_model: Model | None = None) -> Dict[int, int]:
         """Returns a dict with categories popularity stats.
 
         :param categories:
@@ -236,7 +236,7 @@ class Cache:
 
     def get_categories(
             self,
-            parent_aliases: Optional[Union[str, List[str]]] = None,
+            parent_aliases: Union[str, List[str]] | None = None,
             target_object: 'ModelWithCategory' = None,
             tied_only: bool = True
     ):

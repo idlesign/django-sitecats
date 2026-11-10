@@ -100,7 +100,7 @@ class CategoryBase(models.Model):
         if self.is_locked:
             raise SitecatsLockedCategoryDelete(f'Unable to delete locked `{self}` category.')
 
-        super(CategoryBase, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         """Overridden to set sort order and sanitize title.
@@ -111,7 +111,7 @@ class CategoryBase(models.Model):
         """
         self.title = self.title.strip()
 
-        super(CategoryBase, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         if self.sort_order == 0:
             self.sort_order = self.id
@@ -358,10 +358,10 @@ class ModelWithCategory(models.Model):
         if not isinstance(categories, list):
             categories = [categories]
 
-        category_ids = []
-
-        for category in categories:
-            category_ids.append(category.id if isinstance(category, models.Model) else category)
+        category_ids = [
+            category.id if isinstance(category, models.Model) else category
+            for category in categories
+        ]
 
         filter_kwargs = {
             'content_type': ContentType.objects.get_for_model(cls, for_concrete_model=False),
