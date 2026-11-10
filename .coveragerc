@@ -1,3 +1,0 @@
-[run]
-include = sitecats/*
-omit = sitecats/migrations/*, sitecats/tests/*, sitecats/admin.py, sitecats/config.py
