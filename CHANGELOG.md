@@ -1,6 +1,6 @@
 # django-sitecats changelog
 
-### Unreleased
+### v1.2.3 [2026-11-14]
 * ** Fixed model/migrations drift (explicit on_delete for foreign keys; id field pinned to AutoField).
 
 ### v1.2.2 [2021-12-18]
