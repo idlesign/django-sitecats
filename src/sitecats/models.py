@@ -187,7 +187,7 @@ class TieBase(models.Model):
         map_type_to_model = {}
 
         rows = cls.objects.filter(**filter_kwargs).select_related(
-            'content_type', 'category').only('object_id', 'content_type', 'category')
+            'content_type', 'category').only('object_id', 'content_type', 'category').iterator()
 
         for row in rows:
             type_id = row.content_type.id
@@ -387,6 +387,5 @@ class ModelWithCategory(models.Model):
         :param category:
 
         """
-        ids = cls.get_ties_for_categories_qs(category).values_list('object_id').distinct()
-        filter_kwargs = {'id__in': [i[0] for i in ids]}
-        return cls.objects.filter(**filter_kwargs)
+        ids = cls.get_ties_for_categories_qs(category).values_list('object_id', flat=True).distinct()
+        return cls.objects.filter(id__in=ids)

@@ -291,7 +291,7 @@ class TestModelWithCategory:
         assert tie1 not in ties
         assert tie2 in ties
 
-    def test_get_from_category_qs(self, user, create_article, create_comment, create_category):
+    def test_get_from_category_qs(self, user, create_article, create_comment, create_category, db_queries):
         cat1 = create_category()
 
         article = create_article()
@@ -300,11 +300,15 @@ class TestModelWithCategory:
         article.add_to_category(cat1, user)
         comment.add_to_category(cat1, user)
 
-        articles_in_cat = Article.get_from_category_qs(cat1)
+        with db_queries.scope(expect=1):
+            articles_in_cat = list(Article.get_from_category_qs(cat1))
+
         assert len(articles_in_cat) == 1
         assert article in articles_in_cat
 
-        comments_in_cat = Comment.get_from_category_qs(cat1)
+        with db_queries.scope(expect=1):
+            comments_in_cat = list(Comment.get_from_category_qs(cat1))
+
         assert len(comments_in_cat) == 1
         assert comment in comments_in_cat
 

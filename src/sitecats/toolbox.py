@@ -51,10 +51,10 @@ def get_category_lists(
 
     if obj is not None:
         ctype = ContentType.objects.get_for_model(obj)
-        cat_ids = [
-            item[0] for item in
-            get_tie_model().objects.filter(content_type=ctype, object_id=obj.id).values_list('category_id').all()
-        ]
+        cat_ids = list(
+            get_tie_model().objects.filter(
+                content_type=ctype, object_id=obj.id).values_list('category_id', flat=True)
+        )
         parent_aliases = list(get_cache().get_parents_for(cat_ids).union(additional_parents_aliases))
 
     lists = []

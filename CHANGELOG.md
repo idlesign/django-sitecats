@@ -5,6 +5,7 @@
 * ++ Ties are unique per (category, content_type, object_id); add_to_category() no longer creates duplicates.
 * ** Add composite (content_type, object_id) index on Tie; created concurrently on PostgreSQL.
 * ** Fix double save in CategoryBase.save(): sort_order is set with a single update query.
+* ** Reduce DB hits: get_from_category_qs() now uses a subquery instead of two queries; get_linked_objects() streams rows with iterator().
 
 ### v1.2.3 [2026-11-14]
 * ** Fixed model/migrations drift (explicit on_delete for foreign keys; id field pinned to AutoField).
