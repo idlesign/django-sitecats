@@ -115,7 +115,7 @@ class CategoryBase(models.Model):
 
         if self.sort_order == 0:
             self.sort_order = self.id
-            self.save()
+            self.__class__.objects.filter(pk=self.pk).update(sort_order=self.id)
 
     def __str__(self):
         alias = ''
