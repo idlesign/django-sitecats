@@ -1,5 +1,9 @@
 # django-sitecats changelog
 
+### Unreleased
+* !! Custom tie models (SITECATS_MODEL_TIE) get the new unique constraint without deduplication: remove duplicate ties before migrating.
+* ++ Ties are unique per (category, content_type, object_id); add_to_category() no longer creates duplicates.
+
 ### v1.2.3 [2026-11-14]
 * ** Fixed model/migrations drift (explicit on_delete for foreign keys; id field pinned to AutoField).
 

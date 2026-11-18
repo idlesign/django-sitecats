@@ -249,6 +249,12 @@ class TestModelWithCategory:
         assert tie.category == cat
         assert tie.creator == user
 
+        # Повторное добавление возвращает существующую связь, а не создаёт дубликат.
+        tie_again = article.add_to_category(cat, user)
+
+        assert tie_again.pk == tie.pk
+        assert Tie.objects.count() == 1
+
     def test_remove_from_category(self, user, create_article, create_category):
         cat = create_category()
 

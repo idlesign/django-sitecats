@@ -154,6 +154,7 @@ class TieBase(models.Model):
         abstract = True
         verbose_name = _('Tie')
         verbose_name_plural = _('Ties')
+        unique_together = ('category', 'content_type', 'object_id')
 
     def __str__(self):
         return f'{self.content_type}:{self.object_id} tied to {self.category}'
@@ -318,17 +319,13 @@ class ModelWithCategory(models.Model):
     def add_to_category(self, category: 'CategoryBase', user: 'User') -> TieBase:
         """Add this model instance to a category.
 
+        If the instance is already in the category, the existing tie is returned.
+
         :param category: Category to add this object to
         :param user: User heir who adds
 
         """
-        init_kwargs = {
-            'category': category,
-            'creator': user,
-            'linked_object': self
-        }
-        tie = self.categories.model(**init_kwargs)  # That's a model of Tie.
-        tie.save()
+        tie, _ = self.categories.get_or_create(category=category, defaults={'creator': user})
         return tie
 
     def remove_from_category(self, category: CategoryBase):
