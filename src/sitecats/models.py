@@ -155,6 +155,9 @@ class TieBase(models.Model):
         verbose_name = _('Tie')
         verbose_name_plural = _('Ties')
         unique_together = ('category', 'content_type', 'object_id')
+        indexes = [
+            models.Index(fields=['content_type', 'object_id']),
+        ]
 
     def __str__(self):
         return f'{self.content_type}:{self.object_id} tied to {self.category}'
