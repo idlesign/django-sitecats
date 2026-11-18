@@ -44,6 +44,7 @@ class CategoryAdmin(MODEL_ADMIN):
 class TieAdmin(admin.ModelAdmin):
 
     list_display = ('category', 'content_type', 'object_id', 'status')
+    list_select_related = ('category', 'content_type')
     search_fields = ('object_id',)
     list_filter = ('time_created', 'status', 'content_type')
     ordering = ('-time_created',)
