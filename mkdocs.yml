@@ -6,6 +6,9 @@ copyright: Copyright &copy; 2014-2026, Igor Starikov
 repo_url: https://github.com/idlesign/django-sitecats
 edit_uri: edit/master/docs/
 
+hooks:
+  - docs/hooks.py
+
 extra:
   social:
     - icon: fontawesome/brands/github
