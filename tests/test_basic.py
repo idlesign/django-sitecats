@@ -305,7 +305,7 @@ class TestModelWithCategory:
 
         result = article.enable_category_lists_editor(request_post('/'), additional_parents_aliases=['cat1'])
 
-        assert result is None  # В запросе нет действий редактора.
+        assert result is None  # No editor actions in the request.
 
         editor = article._category_editor
         assert editor is not None
@@ -325,7 +325,7 @@ class TestModelWithCategory:
         assert tie.category == cat
         assert tie.creator == user
 
-        # Повторное добавление возвращает существующую связь, а не создаёт дубликат.
+        # Repeated adding returns the existing tie instead of creating a duplicate.
         tie_again = article.add_to_category(cat, user)
 
         assert tie_again.pk == tie.pk
@@ -561,7 +561,8 @@ class TestCategoryListWithObj:
 # TODO CategoryRequestHandler
 
 
-def test_editor_remove_form_render(user, create_article, create_category, request_post, template_render_tag, template_context):
+def test_editor_remove_form_render(
+        user, create_article, create_category, request_post, template_render_tag, template_context):
     cat1 = create_category(alias='cat1')
     cat11 = create_category(parent=cat1)
 

@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Union, Dict, List, Any
+from typing import Any, ClassVar, Dict, List, Union
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -155,7 +155,7 @@ class TieBase(models.Model):
         verbose_name = _('Tie')
         verbose_name_plural = _('Ties')
         unique_together = ('category', 'content_type', 'object_id')
-        indexes = [
+        indexes: ClassVar[list] = [
             models.Index(fields=['content_type', 'object_id']),
         ]
 
