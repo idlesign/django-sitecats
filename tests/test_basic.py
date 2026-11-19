@@ -8,7 +8,7 @@ from django.template.context import Context
 from sitecats.exceptions import SitecatsLockedCategoryDelete, SitecatsConfigurationError
 from sitecats.models import Category, Tie
 from sitecats.settings import UNRESOLVED_URL_MARKER
-from sitecats.toolbox import CategoryList, get_category_aliases_under, get_tie_model, \
+from sitecats.toolbox import CategoryList, get_category_aliases_under, get_category_lists, get_tie_model, \
     get_category_model
 from tests.testapp.models import Comment, Article
 
@@ -114,6 +114,13 @@ class TestTemplateTags:
         result = template_render_tag('sitecats', 'sitecats_categories from my_categories_list', context)
         assert ('data-catid="%s"' % self.cat3.id) in result
         assert ('data-catid="%s"' % self.cat31.id) in result
+
+        # testing custom list template
+        self.cl_cat3.template = 'custom_list_box.html'
+        context = template_context({'my_categories_list': self.cl_cat3})
+        result = template_render_tag('sitecats', 'sitecats_categories from my_categories_list', context)
+        assert 'custom template marker: cat3' in result
+        self.cl_cat3.template = None
 
         # testing unknown type passed into `from` clause
         context = template_context({'my_categories_list': object()})
@@ -237,7 +244,76 @@ class TestTie:
 
 class TestModelWithCategory:
 
-    # TODO set_category_lists_init_kwargs, get_category_lists, enable_category_lists_editor
+    def test_get_category_lists(self, user, create_article, create_category):
+        cat1 = create_category(alias='cat1')
+        cat11 = create_category(parent=cat1)
+
+        article = create_article()
+        article.add_to_category(cat11, user)
+
+        lists = article.get_category_lists()
+
+        assert len(lists) == 1
+        catlist = lists[0]
+        assert isinstance(catlist, CategoryList)
+        assert catlist.alias == 'cat1'
+        assert catlist.obj is article
+
+        cat2 = create_category(alias='cat2')
+        create_category(parent=cat2)
+
+        lists = article.get_category_lists(additional_parents_aliases=['cat2'])
+
+        assert len(lists) == 2
+
+    def test_get_category_lists_init_kwargs(self, user, create_article, create_category):
+        cat1 = create_category(alias='cat1')
+        cat11 = create_category(parent=cat1)
+
+        article = create_article()
+        article.add_to_category(cat11, user)
+
+        article.set_category_lists_init_kwargs({'show_title': True, 'template': 'custom_list_box.html'})
+
+        catlist = article.get_category_lists()[0]
+
+        assert catlist.show_title
+        assert catlist.template == 'custom_list_box.html'
+
+        # Параметры вызова имеют приоритет над предустановленными.
+        catlist = article.get_category_lists(init_kwargs={'show_title': False})[0]
+
+        assert not catlist.show_title
+
+    def test_get_category_lists_custom_cls(self, create_category):
+        class CustomList(CategoryList):
+            pass
+
+        cat1 = create_category(alias='cat1')
+        create_category(parent=cat1)
+
+        lists = get_category_lists(additional_parents_aliases=['cat1'], list_cls=CustomList)
+
+        assert len(lists) == 1
+        assert isinstance(lists[0], CustomList)
+
+    def test_enable_category_lists_editor(self, user, create_article, create_category, request_post):
+        cat1 = create_category(alias='cat1')
+        create_category(parent=cat1)
+
+        article = create_article()
+
+        result = article.enable_category_lists_editor(request_post('/'), additional_parents_aliases=['cat1'])
+
+        assert result is None  # В запросе нет действий редактора.
+
+        editor = article._category_editor
+        assert editor is not None
+
+        lists = article.get_category_lists()
+
+        assert lists == editor.get_lists()
+        assert lists[0].editor.allow_add
 
     def test_add_to_category(self, user, create_article, create_category):
         cat = create_category()

@@ -2,6 +2,7 @@
 
 ### Unreleased
 * !! Custom tie models (SITECATS_MODEL_TIE) get the new unique constraint without deduplication: remove duplicate ties before migrating.
+* ++ CategoryList now accepts custom template; get_category_lists() accepts list_cls to spawn lists of a custom type.
 * ++ Ties are unique per (category, content_type, object_id); add_to_category() no longer creates duplicates.
 * ** Add composite (content_type, object_id) index on Tie; created concurrently on PostgreSQL.
 * ** Fix double save in CategoryBase.save(): sort_order is set with a single update query.

@@ -33,7 +33,8 @@ def get_category_aliases_under(parent_alias: str = None) -> List[str]:
 def get_category_lists(
         init_kwargs: dict = None,
         additional_parents_aliases: List[str] = None,
-        obj: Model = None
+        obj: Model = None,
+        list_cls: type = None
 
 ) -> List['CategoryList']:
     """Returns a list of CategoryList objects, optionally associated with
@@ -42,10 +43,12 @@ def get_category_lists(
     :param init_kwargs:
     :param additional_parents_aliases:
     :param obj: Model instance to get categories for
+    :param list_cls: CategoryList heir class to spawn lists with
 
     """
     init_kwargs = init_kwargs or {}
     additional_parents_aliases = additional_parents_aliases or []
+    list_cls = list_cls or CategoryList
 
     parent_aliases = additional_parents_aliases
 
@@ -63,7 +66,7 @@ def get_category_lists(
     categories_cache = get_cache().get_categories(aliases, obj)
 
     for parent_alias in aliases:
-        catlist = CategoryList(parent_alias, **init_kwargs)  # TODO Burned in class name. Make more customizable.
+        catlist = list_cls(parent_alias, **init_kwargs)
 
         if obj is not None:
             catlist.set_obj(obj)
@@ -90,14 +93,13 @@ class CategoryList:
     _cache_category = None
     _cache_get_categories = None
 
-    #TODO custom template
-
     def __init__(
             self,
             alias: str = None,
             show_title: bool = False,
             show_links: Union[bool, Callable] = True,
-            cat_html_class: str = ''
+            cat_html_class: str = '',
+            template: str = None
     ):
         """
         :param alias: Alias of a category to construct a list from (list will include subcategories)
@@ -111,9 +113,13 @@ class CategoryList:
 
         :param cat_html_class: HTML classes to be added to categories
 
+        :param template: Custom template path to render this list with.
+            Defaults to `sitecats/list_box.html`.
+
         """
         self.alias = alias
         self.show_title = show_title
+        self.template = template
         self._url_resolver = None
 
         if callable(show_links):
