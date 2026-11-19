@@ -1,6 +1,6 @@
 # django-sitecats changelog
 
-### Unreleased
+### v1.3.0 [2026-11-19]
 * !! Custom tie models (SITECATS_MODEL_TIE) get the new unique constraint without deduplication: remove duplicate ties before migrating.
 * !! Single remove form per category list: category_id comes from the clicked button; custom JS must take it from data-catid.
 * ++ CategoryList now accepts custom template; get_category_lists() accepts list_cls to spawn lists of a custom type.
