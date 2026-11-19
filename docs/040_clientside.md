@@ -8,10 +8,6 @@ Do not forget to include JS file in your HTML to use it:
 <script src="{{ STATIC_URL }}js/sitecats/sitecats.min.js"></script>
 ```
 
-!!! note
-
-    jQuery is required for **sitecats** client side functionality.
-
 ## Rendering categories cloud
 
 To convert your categories list into a cloud where category title font size depends upon a number

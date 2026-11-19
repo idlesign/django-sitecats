@@ -559,3 +559,23 @@ class TestCategoryListWithObj:
 
 
 # TODO CategoryRequestHandler
+
+
+def test_editor_remove_form_render(user, create_article, create_category, request_post, template_render_tag, template_context):
+    cat1 = create_category(alias='cat1')
+    cat11 = create_category(parent=cat1)
+
+    article = create_article()
+    article.add_to_category(cat11, user)
+    article.enable_category_lists_editor(
+        request_post('/'),
+        additional_parents_aliases=['cat1'],
+        editor_init_kwargs={'allow_remove': True},
+    )
+
+    context = template_context({'my_obj': article})
+    result = template_render_tag('sitecats', 'sitecats_categories from my_obj', context)
+
+    assert result.count('<form id="catform_remove_') == 1
+    assert 'name="category_id" value="%s"' % cat11.id in result
+    assert 'data-catid="%s"' % cat11.id in result

@@ -2,7 +2,9 @@
 
 ### Unreleased
 * !! Custom tie models (SITECATS_MODEL_TIE) get the new unique constraint without deduplication: remove duplicate ties before migrating.
+* !! Single remove form per category list: category_id comes from the clicked button; custom JS must take it from data-catid.
 * ++ CategoryList now accepts custom template; get_category_lists() accepts list_cls to spawn lists of a custom type.
+* ++ Client side JS is now dependency-free.
 * ++ Ties are unique per (category, content_type, object_id); add_to_category() no longer creates duplicates.
 * ** Add composite (content_type, object_id) index on Tie; created concurrently on PostgreSQL.
 * ** Fix double save in CategoryBase.save(): sort_order is set with a single update query.

@@ -1,6 +1,13 @@
 {% load sitecats %}
-<ul id="catlist_{{ list.get_id }}" class="list">
 {% with list.show_links as show_links %}
+{% if list.editor and list.editor.allow_remove %}
+<form id="catform_remove_{{ list.get_id }}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="category_action" value="remove">
+    <input type="hidden" name="category_base_id" value="{{ list.get_id }}">
+</form>
+{% endif %}
+<ul id="catlist_{{ list.get_id }}" class="list">
 {% for cat in all_categories %}
     <li>
     {% if show_links %}
@@ -10,20 +17,14 @@
     {% endif %}
     {% if list.editor %}
         {% if list.editor.allow_remove and not cat.is_locked %}
-            <form id="catform_remove_{{ list.get_id }}" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="category_action" value="remove">
-                <input type="hidden" name="category_base_id" value="{{ list.get_id }}">
-                <input type="hidden" name="category_id" value="{{ cat.id }}">
-                {% if list.editor.render_button %}
-                    <input type="submit" value="x" class="btn_remove">
-                {% else %}
-                    <span class="btn_remove" data-catformid="catform_remove_{{ list.get_id }}">x</span>
-                {% endif %}
-            </form>
+            {% if list.editor.render_button %}
+                <button type="submit" form="catform_remove_{{ list.get_id }}" name="category_id" value="{{ cat.id }}" class="btn_remove">x</button>
+            {% else %}
+                <span class="btn_remove" data-catformid="catform_remove_{{ list.get_id }}" data-catid="{{ cat.id }}">x</span>
+            {% endif %}
         {% endif %}
     {% endif %}
     </li>
 {% endfor %}
-{% endwith %}
 </ul>
+{% endwith %}
